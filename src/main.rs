@@ -8,11 +8,11 @@ use std::process::Command;
 
 fn main() {
     loop {
-        // Default prompt: "[user@host] /path/to/cwd » "
+        // Default prompt: "[user@host /path/to/cwd] » "
         let user = env!("USER");
         let host = env!("HOSTNAME");
         let cwd = std::env::current_dir().unwrap();
-        print!("[{}@{}] {} » ", user, host, cwd.display());
+        print!("[{}@{} {}] » ", user, host, cwd.display());
         // need to explicitly flush this to ensure it prints before read_line
         io::stdout().flush().expect("Unable to flush stdout");
 
