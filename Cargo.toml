@@ -1,7 +1,10 @@
 [package]
 name = "neosh"
 version = "0.1.0"
+license = "GPL-3.0"
+repository = "https://github.com/NTBBloodbath/neosh"
 edition = "2021"
+rust-version = "1.56"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
