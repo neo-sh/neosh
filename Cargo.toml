@@ -9,4 +9,6 @@ rust-version = "1.56"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rlua = "^0.17.1"
+rlua = "0.17.1"
+dirs = "4.0.0"
+rustyline = "9.0.0"
