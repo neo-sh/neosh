@@ -6,10 +6,11 @@
 -----]]-----------------------------------[[-----
 
 --- @class neosh
-local neosh = neosh
+local neosh = {}
 
 --- Return human-readable tables
-neosh.inspect = package.loaded["inspect"] or require("inspect")
+neosh.inspect = require("inspect")
+neosh.prompt = require("neosh.prompt")
 
 --- Pretty print the given objects
 neosh.pp = function(...)
