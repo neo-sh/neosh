@@ -8,11 +8,6 @@
 --- @class neostd
 local neostd = neostd
 
---- Faster exit by using abstraction
-neostd.exit = function()
-  os.exit(0)
-end
-
 --- Return human-readable tables
 neostd.inspect = package.loaded["inspect"] or require("inspect")
 

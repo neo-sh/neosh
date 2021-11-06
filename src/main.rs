@@ -1,22 +1,21 @@
-// TODO: finish the initial Lua file that will load our stdlib (lua.rs) and discover how to load
-// local modules, it seems like this is a pain like Python modules?
-// mod lua;
-use std::env;
-use std::path::PathBuf;
+mod lua;
 
-// use dirs;
+extern crate dirs;
+
+use std::env;
+// use std::fs;
+use std::path::{Path, PathBuf};
+
 use rlua::{Error as LuaError, Lua, MultiValue};
+use rustyline::error::ReadlineError;
 use rustyline::Editor;
 use rustyline::{config::Configurer, config::EditMode};
-use rustyline::error::ReadlineError;
 
 #[allow(dead_code)]
 struct NeoshPaths {
     data: PathBuf,
     config: PathBuf,
 }
-
-const NEOSH_STDLIB: &str = include_str!("lua/neostd.lua");
 
 fn main() {
     // Set up NEOSH paths, we are doing it this way to allow cross-platform compatibility
@@ -41,31 +40,22 @@ fn main() {
         // TODO: move this hist file to ~/.local/share/neosh/.neosh_history later
         let _ = rl.load_history("hist.txt");
 
-        // ===== Lua ==================
-        // Setup package path so we can require scripts
-        lua_ctx.load(r#"
-            -- Get the system separator so we can deal with Windows' complex of being unique
-            local sep = package.config:sub(1, 1)
-            -- Update path
-            package.path = package.path .. string.format(";.%ssrc%slua%s?.lua", sep, sep, sep)
-        "#).exec().unwrap();
-
-        // Load NeoSH Lua scripts
-        // lua::init();
-        let globals = lua_ctx.globals();
-        let lua_neosh = lua_ctx.create_table().unwrap();
-        globals.set("neostd", lua_neosh).unwrap();
-        // Load NeoSH extended Lua stdlib + inspect function
-        lua_ctx.load(NEOSH_STDLIB).set_name("neostd").unwrap().exec().unwrap();
-        // lua_ctx.load("neostd.inspect = require('inspect')").exec().unwrap();
+        // Load NeoSH Lua stdlib
+        lua::init(lua_ctx);
 
         loop {
-            // Default prompt: "[user@host /path/to/cwd] » "
             let user = env!("USER");
-            let host = env!("HOSTNAME");
-            let cwd = std::env::current_dir().unwrap();
+            // Fallback to "$HOST" if running MacOS and set host to "machine" if we were unable to
+            // find the hostname
+            let host = option_env!("HOSTNAME").unwrap_or(option_env!("HOST").unwrap_or("machine"));
+            let cwd = env::current_dir()
+                .unwrap()
+                .into_os_string()
+                .into_string()
+                .unwrap();
 
-            let mut prompt = format!("[{}@{} {}] » ", user, host, cwd.display());
+            // Default prompt: "[user@host /path/to/cwd] » "
+            let mut prompt = format!("[{}@{} {}] » ", user, host, cwd);
             let mut line = String::new();
 
             loop {
@@ -75,48 +65,73 @@ fn main() {
                     Err(ReadlineError::Interrupted) => {
                         println!("");
                         break;
-                    },
+                    }
                     // Ctrl-D, exit like ZSH
-                    Err(ReadlineError::Eof) => {
-                        return
-                    },
+                    Err(ReadlineError::Eof) => return,
                     Err(_) => return,
                 }
 
-                // NOTE: maybe this could be done in other way?
-                if &line == "exit" {
-                    // Save exit command to history before exiting shell
-                    // TODO: use neosh data directory to save history once
-                    // initial directories setup is done
-                    rl.add_history_entry("exit");
-                    lua_ctx.load("neostd.exit()").exec().unwrap();
-                }
+                // Separate command and arguments
+                let mut cmd_parts = line.trim().split_whitespace();
+                let command = cmd_parts.next().unwrap();
+                let args = cmd_parts;
 
-                match lua_ctx.load(&line).eval::<MultiValue>() {
-                    Ok(values) => {
-                        rl.add_history_entry(line);
-                        let output = format!(
-                            "{}",
-                            values
-                                .iter()
-                                .map(|val| format!("{:?}", val))
-                                .collect::<Vec<_>>()
-                                .join("\t")
-                        );
-                        println!("{}", output);
-                        break;
-                    },
-                    Err(LuaError::SyntaxError {
-                        incomplete_input: true,
-                        ..
-                    }) => {
-                        // continue reading input and append it to `line`
-                        line.push_str("\n"); // separate input lines
-                        prompt = "> ".to_string();
+                // ===== Built-in commands
+                // NOTE: move them later to another location (a separated module)
+                match command {
+                    // Exit shell
+                    "exit" => {
+                        // Save exit command to history before exiting shell
+                        // TODO: use neosh data directory to save history once
+                        // initial directories setup is done
+                        rl.add_history_entry(&line);
+                        return;
                     }
-                    Err(err) => {
-                        eprintln!("error: {}", err);
+                    // Change cwd, see this link for more information
+                    // https://unix.stackexchange.com/a/38809
+                    "cd" => {
+                        rl.add_history_entry(&line);
+                        let home_dir = dirs::home_dir().unwrap();
+                        // default to '~' as new directory if one was not provided
+                        let new_dir = args
+                            .peekable()
+                            .peek()
+                            .map_or(home_dir, |dir| PathBuf::from(dir));
+                        let root = Path::new(&new_dir);
+                        if let Err(err) = env::set_current_dir(&root) {
+                            eprintln!("{}", err);
+                        }
                         break;
+                    }
+                    // Interpret Lua code
+                    _ => {
+                        match lua_ctx.load(&line).eval::<MultiValue>() {
+                            Ok(values) => {
+                                // Save command to history and print the output
+                                rl.add_history_entry(&line);
+                                println!(
+                                    "{}",
+                                    values
+                                        .iter()
+                                        .map(|val| format!("{:?}", val))
+                                        .collect::<Vec<_>>()
+                                        .join("\t")
+                                );
+                                break;
+                            }
+                            Err(LuaError::SyntaxError {
+                                incomplete_input: true,
+                                ..
+                            }) => {
+                                // continue reading input and append it to `line`
+                                line.push_str("\n"); // separate input lines
+                                prompt = "> ".to_string();
+                            }
+                            Err(err) => {
+                                eprintln!("error: {}", err);
+                                break;
+                            }
+                        }
                     }
                 }
             }
