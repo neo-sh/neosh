@@ -6,6 +6,9 @@ repository = "https://github.com/NTBBloodbath/neosh"
 edition = "2018"
 
 [dependencies]
-rlua = "0.17.1"
 dirs = "4.0.0"
 rustyline = "9.0.0"
+
+[dependencies.mlua]
+version = "0.6.6"
+features = ["vendored", "luajit"]
