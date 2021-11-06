@@ -5,31 +5,31 @@
 ----                                         ----
 -----]]-----------------------------------[[-----
 
---- @class neostd
-local neostd = neostd
+--- @class neosh
+local neosh = neosh
 
 --- Return human-readable tables
-neostd.inspect = package.loaded["inspect"] or require("inspect")
+neosh.inspect = package.loaded["inspect"] or require("inspect")
 
 --- Pretty print the given objects
-neostd.pp = function(...)
+neosh.pp = function(...)
   local args = { ... }
   for _, arg in ipairs(args) do
-    print(neostd.inspect(arg))
+    print(neosh.inspect(arg))
   end
 end
 
 --- Check if string is empty or if it is nil
 --- @tparam str string The string to be checked
 --- @return boolean
-neostd.is_empty = function(str)
+neosh.is_empty = function(str)
   return str == "" or str == nil
 end
 
 --- Escape special characters in a string
 --- @tparam string str The string to be escaped
 --- @return string
-neostd.escape_str = function(str)
+neosh.escape_str = function(str)
   local escape_patterns = {
     "%^",
     "%$",
@@ -51,8 +51,9 @@ end
 --- Extract the given table keys names and returns them
 --- @tparam table tbl The table to extract its keys
 --- @return table
-neostd.tbl_keys = function(tbl)
+neosh.tbl_keys = function(tbl)
   local keys = {}
+
   for key, _ in pairs(tbl) do
     table.insert(keys, key)
   end
@@ -64,7 +65,7 @@ end
 --- @tparam table tbl The table to look for the given value
 --- @tparam any val The value to be looked for
 --- @return boolean
-neostd.has_value = function(tbl, val)
+neosh.has_value = function(tbl, val)
   for _, value in ipairs(tbl) do
     if value == val then
       return true
@@ -78,8 +79,8 @@ end
 --- @tparam table tbl The table to look for the given key
 --- @tparam string key The key to be looked for
 --- @return boolean
-neostd.has_key = function(tbl, key)
-  for _, k in ipairs(neostd.tbl_keys(tbl)) do
+neosh.has_key = function(tbl, key)
+  for _, k in ipairs(neosh.tbl_keys(tbl)) do
     if k == key then
       return true
     end
@@ -95,6 +96,6 @@ end
 --
 end ]]
 
-return neostd
+return neosh
 
 -- vim: sw=2:ts=2:sts=2:tw=100:
