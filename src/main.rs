@@ -1,4 +1,4 @@
-mod neosh;
+mod core;
 
 use std::env;
 use std::path::{Path, PathBuf};
@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use mlua::{Error as LuaError, Lua, MultiValue};
 use rustyline::{config::Configurer, config::EditMode, error::ReadlineError, Editor};
 
-use crate::neosh::lua as nlua;
+use crate::core::lua as nlua;
 
 fn main() {
     // TODO: move this into `impl NeoshPaths`
