@@ -15,6 +15,7 @@ struct NeoshPaths {
 }
 
 fn main() {
+    // TODO: move this into `impl NeoshPaths`
     // Set up NEOSH paths, we are doing it this way to allow cross-platform compatibility
     // TODO: finish the initial implementation to use data directory to save history later
     /* let mut neosh_data_dir = dirs::data_dir().unwrap();
