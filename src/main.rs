@@ -38,10 +38,8 @@ fn main() {
     nlua::init(&lua);
 
     loop {
-        let user = env!("USER");
-        // Fallback to "$HOST" if running MacOS and set host to "machine" if we were unable to
-        // find the hostname
-        let host = option_env!("HOSTNAME").unwrap_or(option_env!("HOST").unwrap_or("machine"));
+        let user = whoami::username();
+        let host = whoami::hostname();
         let cwd = env::current_dir()
             .unwrap()
             .into_os_string()
@@ -57,7 +55,7 @@ fn main() {
                 Ok(input) => line.push_str(&input),
                 // Ctrl-C, print empty line like ZSH
                 Err(ReadlineError::Interrupted) => {
-                    println!("");
+                    println!();
                     break;
                 }
                 // Ctrl-D, exit like ZSH
@@ -90,7 +88,7 @@ fn main() {
                     let new_dir = args
                         .peekable()
                         .peek()
-                        .map_or(home_dir, |dir| PathBuf::from(dir));
+                        .map_or(home_dir, PathBuf::from);
                     let root = Path::new(&new_dir);
                     if let Err(err) = env::set_current_dir(&root) {
                         eprintln!("{}", err);
@@ -118,7 +116,7 @@ fn main() {
                             ..
                         }) => {
                             // continue reading input and append it to `line`
-                            line.push_str("\n"); // separate input lines
+                            line.push('\n'); // separate input lines
                             prompt = "> ".to_string();
                         }
                         Err(err) => {
