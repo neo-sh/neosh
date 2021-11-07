@@ -21,6 +21,9 @@ fn main() {
         config: neosh_config_dir,
     }; */
 
+    // Expose NeoSH version as an environment variable
+    env::set_var("NEOSH_VERSION", core::VERSION);
+
     // ===== Readline setup ======
     let mut readline = Editor::<()>::new();
     // TODO: change this after establishing the initial configurations setup
