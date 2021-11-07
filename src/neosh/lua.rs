@@ -1,9 +1,9 @@
-use rlua::Context;
+use mlua::Lua;
 
 const NEOSH_STDLIB: &str = include_str!("../lua/neosh.lua");
 
 // Initialize Lua globals
-pub fn init(lua: Context) {
+pub fn init(lua: &Lua) {
     // ===== Setup package path so we can require scripts
     lua.load(
         r#"
