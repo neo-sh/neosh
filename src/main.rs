@@ -1,13 +1,12 @@
-mod lua;
+mod neosh;
 
 use std::env;
-// use std::fs;
 use std::path::{Path, PathBuf};
 
 use rlua::{Error as LuaError, Lua, MultiValue};
-use rustyline::error::ReadlineError;
-use rustyline::Editor;
-use rustyline::{config::Configurer, config::EditMode};
+use rustyline::{config::Configurer, config::EditMode, error::ReadlineError, Editor};
+
+use crate::neosh::lua;
 
 #[allow(dead_code)]
 struct NeoshPaths {
@@ -28,7 +27,7 @@ fn main() {
         config: neosh_config_dir,
     }; */
 
-    Lua::new().context(|lua_ctx| {
+    Lua::new().context(|lua_context| {
         // ===== Readline setup =======
         let mut rl = Editor::<()>::new();
         // TODO: change this after establishing the initial configurations setup
@@ -40,7 +39,7 @@ fn main() {
         let _ = rl.load_history("hist.txt");
 
         // Load NeoSH Lua stdlib
-        lua::init(lua_ctx);
+        lua::init(lua_context);
 
         loop {
             let user = env!("USER");
@@ -104,7 +103,7 @@ fn main() {
                     }
                     // Interpret Lua code
                     _ => {
-                        match lua_ctx.load(&line).eval::<MultiValue>() {
+                        match lua_context.load(&line).eval::<MultiValue>() {
                             Ok(values) => {
                                 // Save command to history and print the output
                                 rl.add_history_entry(&line);
@@ -134,6 +133,7 @@ fn main() {
                     }
                 }
             }
+
             // TODO: use neosh data directory to save history once
             // initial directories setup is done
             rl.save_history("hist.txt").unwrap();

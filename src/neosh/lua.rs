@@ -1,6 +1,6 @@
 use rlua::Context;
 
-const NEOSH_STDLIB: &str = include_str!("lua/neostd.lua");
+const NEOSH_STDLIB: &str = include_str!("../lua/neosh.lua");
 
 // Initialize Lua globals
 pub fn init(lua: Context) {
@@ -21,9 +21,11 @@ pub fn init(lua: Context) {
     // ===== Load NeoSH Lua scripts
     // Load NeoSH extended Lua stdlib + inspect function
     let lua_neostd = lua.create_table().unwrap();
-    globals.set("neostd", lua_neostd).unwrap();
+
+    globals.set("neosh", lua_neostd).unwrap();
+
     lua.load(NEOSH_STDLIB)
-        .set_name("neostd")
+        .set_name("neosh")
         .unwrap()
         .exec()
         .unwrap();
