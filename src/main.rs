@@ -34,7 +34,7 @@ fn init() -> fs::NeoshPaths {
     // Expose NeoSH version as an environment variable
     env::set_var("NEOSH_VERSION", core::VERSION);
 
-    return neosh_paths;
+    neosh_paths
 }
 
 fn main() {
