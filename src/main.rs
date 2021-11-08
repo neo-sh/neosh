@@ -6,39 +6,60 @@ use std::path::{Path, PathBuf};
 use mlua::{Error as LuaError, Lua, MultiValue};
 use rustyline::{config::Configurer, config::EditMode, error::ReadlineError, Editor};
 
+use crate::core::fs;
 use crate::core::lua as nlua;
 
-fn main() {
-    // TODO: move this into `impl NeoshPaths`
-    // Set up NEOSH paths, we are doing it this way to allow cross-platform compatibility
-    // TODO: finish the initial implementation to use data directory to save history later
-    /* let mut neosh_data_dir = dirs::data_dir().unwrap();
-    neosh_data_dir.push("neosh");
-    let mut neosh_config_dir = dirs::config_dir().unwrap();
-    neosh_config_dir.push("neosh");
-    let _paths = NeoshPaths {
-        data: neosh_data_dir,
-        config: neosh_config_dir,
-    }; */
+/// Run pre-launch tasks. Create NeoSH directories and expose environment variables
+fn init() -> fs::NeoshPaths {
+    // Declare NeoSH directories, e.g. '~/.cache/neosh'
+    let mut data_dir = dirs::data_dir().unwrap();
+    data_dir.push("neosh");
+    let mut cache_dir = dirs::cache_dir().unwrap();
+    cache_dir.push("neosh");
+    let mut config_dir = dirs::config_dir().unwrap();
+    config_dir.push("neosh");
+
+    let neosh_paths = fs::NeoshPaths {
+        data: data_dir,
+        cache: cache_dir,
+        config: config_dir,
+    };
+
+    // Create core NeoSH directories, e.g. '~/.local/share/neosh'
+    match &neosh_paths.create_neosh_dirs() {
+        Ok(_) => (),
+        Err(err) => eprintln!("Failed to create NeoSH core directories: {}", err),
+    };
 
     // Expose NeoSH version as an environment variable
     env::set_var("NEOSH_VERSION", core::VERSION);
 
+    return neosh_paths;
+}
+
+fn main() {
+    // Run initial tasks and get the NeoSH paths
+    let neosh_paths = init();
+
     // ===== Readline setup ======
     let mut readline = Editor::<()>::new();
-    // TODO: change this after establishing the initial configurations setup
+    // NOTE: change this after establishing the initial configurations setup
     // set mode to Vi instead of the default one (Emacs)
     readline.set_edit_mode(EditMode::Vi);
 
+    // Setup history file path
+    let mut history_path = PathBuf::from(&neosh_paths.data);
+    history_path.push(".neosh_history");
+    let history_path = history_path.into_os_string().into_string().unwrap();
+
     // Load previous history and ignore errors if there isn't a history file
-    // TODO: move this hist file to ~/.local/share/neosh/.neosh_history later
-    let _ = readline.load_history("hist.txt");
+    let _ = readline.load_history(&history_path);
 
     // ===== Lua setup ===========
     let lua = Lua::new();
 
     // Load NeoSH Lua stdlib
-    nlua::init(&lua);
+    nlua::init(&lua).unwrap();
 
     loop {
         let user = whoami::username();
@@ -99,40 +120,38 @@ fn main() {
                     break;
                 }
                 // Interpret Lua code
-                _ => {
-                    match lua.load(&line).eval::<MultiValue>() {
-                        Ok(values) => {
-                            // Save command to history and print the output
-                            readline.add_history_entry(&line);
-                            println!(
-                                "{}",
-                                values
-                                    .iter()
-                                    .map(|val| format!("{:?}", val))
-                                    .collect::<Vec<_>>()
-                                    .join("\t")
-                            );
-                            break;
-                        }
-                        Err(LuaError::SyntaxError {
-                            incomplete_input: true,
-                            ..
-                        }) => {
-                            // continue reading input and append it to `line`
-                            line.push('\n'); // separate input lines
-                            prompt = "> ".to_string();
-                        }
-                        Err(err) => {
-                            eprintln!("error: {}", err);
-                            break;
-                        }
+                _ => match lua.load(&line).eval::<MultiValue>() {
+                    Ok(values) => {
+                        // Save command to history and print the output
+                        readline.add_history_entry(&line);
+                        println!(
+                            "{}",
+                            values
+                                .iter()
+                                .map(|val| format!("{:?}", val))
+                                .collect::<Vec<_>>()
+                                .join("\t")
+                        );
+                        break;
+                    }
+                    Err(LuaError::SyntaxError {
+                        incomplete_input: true,
+                        ..
+                    }) => {
+                        // continue reading input and append it to `line`
+                        line.push('\n'); // separate input lines
+                        prompt = "> ".to_string();
+                    }
+                    Err(err) => {
+                        eprintln!("error: {}", err);
+                        break;
                     }
                 }
             }
         }
 
-        // TODO: use neosh data directory to save history once
-        // initial directories setup is done
-        readline.save_history("hist.txt").unwrap();
+        // TODO: Make an option to save history after every command instead of having to wait until
+        // the user exits the shell
+        readline.save_history(&history_path).unwrap();
     }
 }

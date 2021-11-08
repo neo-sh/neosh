@@ -1,9 +1,10 @@
 use mlua::Lua;
+use mlua::prelude::{LuaResult, LuaTable};
 
 const NEOSH_STDLIB: &str = include_str!("../lua/neosh.lua");
 
 // Initialize Lua globals
-pub fn init(lua: &Lua) {
+pub fn init(lua: &Lua) -> LuaResult<LuaTable> {
     // ===== Setup package path so we can require scripts
     lua.load(
         r#"
@@ -13,20 +14,18 @@ pub fn init(lua: &Lua) {
         package.path = package.path .. string.format(";.%ssrc%slua%s?.lua", sep, sep, sep)
     "#,
     )
-    .exec()
-    .unwrap();
+    .exec()?;
 
     let globals = lua.globals();
 
-    // ===== Load NeoSH Lua scripts
+    // ===== Load NeoSH Lua scripts and functions
     // Load NeoSH extended Lua stdlib + inspect function
-    let lua_neostd = lua.create_table().unwrap();
+    let lua_neosh = lua.create_table()?;
 
-    globals.set("neosh", lua_neostd).unwrap();
+    globals.set("neosh", lua_neosh)?;
 
     lua.load(NEOSH_STDLIB)
-        .set_name("neosh")
-        .unwrap()
-        .exec()
-        .unwrap();
+        .set_name("neosh")?
+        .exec()?;
+    Ok(globals)
 }
