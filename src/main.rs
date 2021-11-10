@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use mlua::{Error as LuaError, Lua, MultiValue};
 use rustyline::{config::Configurer, config::EditMode, error::ReadlineError, Editor};
 
-use neosh::core::{self, fs, lua as nlua};
+use neosh::core::{self, fs, lua as nlua, commands};
 
 /// Run pre-launch tasks. Create NeoSH directories and expose environment variables
 fn init() -> fs::NeoshPaths {
@@ -85,35 +85,25 @@ fn main() {
             }
 
             // Separate command and arguments
-            let mut cmd_parts = line.trim().split_whitespace();
-            let command = cmd_parts.next().unwrap();
-            let args = cmd_parts;
+            let mut args = line.trim().split_whitespace();
+            let command = args.next().unwrap();
 
             // ===== Built-in commands
             // NOTE: move them later to another location (a separated module)
             match command {
                 // Exit shell
                 "exit" => {
-                    // Save exit command to history before exiting shell
-                    // TODO: use neosh data directory to save history once
-                    // initial directories setup is done
-                    readline.add_history_entry(&line);
+                    commands::exit(&mut readline, &line);
                     return;
                 }
-                // Change cwd, see this link for more information
-                // https://unix.stackexchange.com/a/38809
+
                 "cd" => {
-                    readline.add_history_entry(&line);
-                    let home_dir = dirs::home_dir().unwrap();
-                    // default to '~' as new directory if one was not provided
-                    let new_dir = args
-                        .peekable()
-                        .peek()
-                        .map_or(home_dir, PathBuf::from);
-                    let root = Path::new(&new_dir);
-                    if let Err(err) = env::set_current_dir(&root) {
-                        eprintln!("{}", err);
-                    }
+                    commands::cd(&mut readline, &line, args);
+                    break;
+                }
+
+                "pwd" => {
+                    commands::pwd(&mut readline, &line);
                     break;
                 }
                 // Interpret Lua code
