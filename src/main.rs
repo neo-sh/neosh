@@ -1,13 +1,10 @@
-mod core;
-
 use std::env;
 use std::path::{Path, PathBuf};
 
 use mlua::{Error as LuaError, Lua, MultiValue};
 use rustyline::{config::Configurer, config::EditMode, error::ReadlineError, Editor};
 
-use crate::core::fs;
-use crate::core::lua as nlua;
+use neosh::core::{self, fs, lua as nlua};
 
 /// Run pre-launch tasks. Create NeoSH directories and expose environment variables
 fn init() -> fs::NeoshPaths {
