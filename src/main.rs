@@ -58,9 +58,11 @@ fn main() {
     // Load NeoSH Lua stdlib
     nlua::init(&lua).unwrap();
 
+    // fetch username and hostname
+    let user = whoami::username();
+    let host = whoami::hostname();
+
     loop {
-        let user = whoami::username();
-        let host = whoami::hostname();
         let cwd = env::current_dir()
             .unwrap()
             .into_os_string()
@@ -68,7 +70,7 @@ fn main() {
             .unwrap();
 
         // Default prompt: "[user@host /path/to/cwd] » "
-        let mut prompt = format!("[{}@{} {}] » ", user, host, cwd);
+        let mut prompt = format!("[{}@{} {}] » ", &user, &host, cwd);
         let mut line = String::new();
 
         loop {
