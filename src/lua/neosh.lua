@@ -6,7 +6,7 @@
 -----]]-----------------------------------[[-----
 
 --- @class neosh
-local neosh = {}
+local neosh = neosh or {}
 
 --- Return human-readable tables
 neosh.inspect = require("inspect")
