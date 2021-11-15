@@ -1,5 +1,5 @@
-use mlua::Lua;
 use mlua::prelude::{LuaResult, LuaTable};
+use mlua::Lua;
 
 const NEOSH_STDLIB: &str = include_str!("../lua/neosh.lua");
 
@@ -24,8 +24,6 @@ pub fn init(lua: &Lua) -> LuaResult<LuaTable> {
 
     globals.set("neosh", lua_neosh)?;
 
-    lua.load(NEOSH_STDLIB)
-        .set_name("neosh")?
-        .exec()?;
+    lua.load(NEOSH_STDLIB).set_name("neosh")?.exec()?;
     Ok(globals)
 }

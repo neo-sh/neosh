@@ -1,6 +1,10 @@
 //! All built-in commands available in neosh
 
-use std::{env, path::{Path, PathBuf}, str::SplitWhitespace};
+use std::{
+    env,
+    path::{Path, PathBuf},
+    str::SplitWhitespace,
+};
 type EEditor = rustyline::Editor<()>;
 
 /// Exit shell
@@ -12,11 +16,7 @@ pub fn exit(editor: &mut EEditor, line: &str) {
 
 /// Change current working directory
 // https://unix.stackexchange.com/a/38809
-pub fn cd(
-    editor: &mut EEditor,
-    line: &str,
-    args: SplitWhitespace,
-) {
+pub fn cd(editor: &mut EEditor, line: &str, args: SplitWhitespace) {
     editor.add_history_entry(line);
     let home_dir = dirs::home_dir().unwrap();
 
@@ -30,24 +30,22 @@ pub fn cd(
 
 /// Print current working directory
 // NOTE: I am not importing cwd from main.rs because we might change structure (Shift)
-pub fn pwd(
-    editor: &mut EEditor,
-    line: &str,
-) {
+pub fn pwd(editor: &mut EEditor, line: &str) {
     editor.add_history_entry(line);
-    println!("{}", env::current_dir().unwrap().into_os_string().into_string().unwrap());
+    println!(
+        "{}",
+        env::current_dir()
+            .unwrap()
+            .into_os_string()
+            .into_string()
+            .unwrap()
+    );
 }
 
 /// Print input
 // TODO: make it use stdin
-pub fn echo(
-    editor: &mut EEditor,
-    line: &str,
-    args: SplitWhitespace,
-) {
+pub fn echo(editor: &mut EEditor, line: &str, args: SplitWhitespace) {
     editor.add_history_entry(line);
 
-    println!("{}", {
-        args.collect::<Vec<&str>>().join(" ")
-    })
+    println!("{}", { args.collect::<Vec<&str>>().join(" ") })
 }

@@ -1,6 +1,6 @@
+use std::ffi;
 use std::fs;
 use std::io;
-use std::ffi;
 use std::path::PathBuf;
 
 pub struct NeoshPaths {

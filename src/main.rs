@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use mlua::{Error as LuaError, Lua, MultiValue};
 use rustyline::{config::Configurer, config::EditMode, error::ReadlineError, Editor};
 
-use neosh::core::{self, fs, lua as nlua, commands};
+use neosh::core::{self, commands, fs, lua as nlua};
 
 /// Run pre-launch tasks. Create NeoSH directories and expose environment variables
 fn init() -> fs::NeoshPaths {
@@ -142,7 +142,7 @@ fn main() {
                         eprintln!("error: {}", err);
                         break;
                     }
-                }
+                },
             }
         }
 
