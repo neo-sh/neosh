@@ -10,10 +10,11 @@ use neosh::core::{self, fs, lua as nlua, commands};
 fn init() -> fs::NeoshPaths {
     // Declare NeoSH directories, e.g. '~/.cache/neosh'
     let mut data_dir = dirs::data_dir().unwrap();
-    data_dir.push("neosh");
     let mut cache_dir = dirs::cache_dir().unwrap();
-    cache_dir.push("neosh");
     let mut config_dir = dirs::config_dir().unwrap();
+
+    data_dir.push("neosh");
+    cache_dir.push("neosh");
     config_dir.push("neosh");
 
     let neosh_paths = fs::NeoshPaths {
@@ -108,6 +109,12 @@ fn main() {
                     commands::pwd(&mut readline, &line);
                     break;
                 }
+
+                "echo" => {
+                    commands::echo(&mut readline, &line, args);
+                    break;
+                }
+
                 // Interpret Lua code
                 _ => match lua.load(&line).eval::<MultiValue>() {
                     Ok(values) => {
