@@ -6,15 +6,15 @@ type EEditor = rustyline::Editor<()>;
 /// Exit shell
 ///
 /// Actually, does nothing but saving last cmd in history
-pub fn exit<'l>(editor: &mut EEditor, line: &'l String) {
+pub fn exit(editor: &mut EEditor, line: &str) {
     editor.add_history_entry(line);
 }
 
 /// Change current working directory
 // https://unix.stackexchange.com/a/38809
-pub fn cd<'l>(
+pub fn cd(
     editor: &mut EEditor,
-    line: &'l String,
+    line: &str,
     args: SplitWhitespace,
 ) {
     editor.add_history_entry(line);
@@ -30,9 +30,9 @@ pub fn cd<'l>(
 
 /// Print current working directory
 // NOTE: I am not importing cwd from main.rs because we might change structure (Shift)
-pub fn pwd<'l>(
+pub fn pwd(
     editor: &mut EEditor,
-    line: &'l String,
+    line: &str,
 ) {
     editor.add_history_entry(line);
     println!("{}", env::current_dir().unwrap().into_os_string().into_string().unwrap());
@@ -40,9 +40,9 @@ pub fn pwd<'l>(
 
 /// Print input
 // TODO: make it use stdin
-pub fn echo<'l>(
+pub fn echo(
     editor: &mut EEditor,
-    line: &'l String,
+    line: &str,
     args: SplitWhitespace,
 ) {
     editor.add_history_entry(line);
