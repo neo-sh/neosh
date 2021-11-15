@@ -37,3 +37,17 @@ pub fn pwd<'l>(
     editor.add_history_entry(line);
     println!("{}", env::current_dir().unwrap().into_os_string().into_string().unwrap());
 }
+
+/// Print input
+// TODO: make it use stdin
+pub fn echo<'l>(
+    editor: &mut EEditor,
+    line: &'l String,
+    args: SplitWhitespace,
+) {
+    editor.add_history_entry(line);
+
+    println!("{}", {
+        args.collect::<Vec<&str>>().join(" ")
+    })
+}
