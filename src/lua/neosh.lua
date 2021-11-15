@@ -13,7 +13,7 @@ neosh.inspect = require("inspect")
 neosh.prompt = require("neosh.prompt")
 
 --- Pretty print the given objects
-neosh.pp = function(...)
+neosh.fprint = function(...)
   local args = { ... }
   for _, arg in ipairs(args) do
     print(neosh.inspect(arg))
