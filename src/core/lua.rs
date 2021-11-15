@@ -11,7 +11,7 @@ pub fn init(lua: &Lua) -> LuaResult<LuaTable> {
         -- Get the system separator so we can deal with Windows' complex of being unique
         local sep = package.config:sub(1, 1)
         -- Update path
-        package.path = package.path .. string.format(";.%ssrc%slua%s?.lua", sep, sep, sep)
+        package.path = table.concat({package.path, string.format(";.%ssrc%slua%s?.lua", sep, sep, sep)})
     "#,
     )
     .exec()?;

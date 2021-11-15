@@ -41,9 +41,9 @@ end
 -- Otherwise, it returns a regular quoted string
 local function smartQuote(str)
   if str:match('"') and not str:match("'") then
-    return "'" .. str .. "'"
+    return table.concat({"'", str, "'"})
   end
-  return '"' .. str:gsub('"', '\\"') .. '"'
+  return table.concat({'"', str:gsub('"', '\\"'), '"'})
 end
 
 -- \a => '\\a', \0 => '\\0', 31 => '\31'
@@ -55,7 +55,7 @@ local longControlCharEscapes = {} -- \a => nil, \0 => \000, 31 => \031
 for i=0, 31 do
   local ch = string.char(i)
   if not shortControlCharEscapes[ch] then
-    shortControlCharEscapes[ch] = "\\"..i
+    shortControlCharEscapes[ch] = table.concat({"\\", i})
     longControlCharEscapes[ch]  = string.format("\\%03d", i)
   end
 end
