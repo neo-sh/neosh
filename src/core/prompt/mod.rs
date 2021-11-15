@@ -1,3 +1,7 @@
+/*
+
+Comment until necessary
+
 use super::lua;
 use mlua::Table; // We'll soon expose several utility functions in this module
 
@@ -6,3 +10,5 @@ struct Prompt<'a> {
 }
 
 pub fn create() {}
+
+*/
