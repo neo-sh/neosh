@@ -1,9 +1,14 @@
 [package]
 name = "neosh"
 version = "0.1.0"
-license = "GPL-3.0"
-repository = "https://github.com/neo-sh/neosh"
 edition = "2018"
+authors = ["NTBBloodBath", "Shift", "Vhyrro"]
+description = "A next-gen shell for modern systems"
+repository = "https://github.com/neo-sh/neosh"
+homepage = "https://github.com/neo-sh/neosh"
+license = "GPL-3.0"
+readme = "README.md"
+include = ["src/*", "Cargo.*", "README.md", "LICENSE"]
 
 [dependencies]
 dirs = "4.0.0"
