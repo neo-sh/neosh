@@ -2,7 +2,7 @@
 name = "neosh"
 version = "0.1.0"
 license = "GPL-3.0"
-repository = "https://github.com/NTBBloodbath/neosh"
+repository = "https://github.com/neo-sh/neosh"
 edition = "2018"
 
 [dependencies]
