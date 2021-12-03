@@ -1,15 +1,26 @@
 [package]
 name = "neosh"
 version = "0.1.0"
-license = "GPL-3.0"
-repository = "https://github.com/NTBBloodbath/neosh"
 edition = "2018"
+authors = ["NTBBloodBath", "Shift", "Vhyrro"]
+description = "A next-gen shell for modern systems"
+repository = "https://github.com/neo-sh/neosh"
+homepage = "https://github.com/neo-sh/neosh"
+license = "GPL-3.0"
+readme = "README.md"
+include = ["src/*", "Cargo.*", "README.md", "LICENSE"]
 
 [dependencies]
-dirs = "4.0.0"
-whoami = "1.2.0"
-rustyline = "9.0.0"
+dirs = "4.0.0"                    # Crossplatform directories manipulation
+whoami = "1.2.0"                  # Utils for fetching user data
+rustyline = "9.0.0"               # Read user input
+tracing = "0.1.29"                #
+tracing-appender = "0.2.0"        # Logging
 
-[dependencies.mlua]
-version = "0.6.6"
-features = ["vendored", "luajit"]
+[dependencies.mlua]               # Lua interpreter
+version = "0.6.6"                 #
+features = ["vendored", "luajit"] # Build LuaJIT on `cargo build`
+
+[dependencies.tracing-subscriber] # Logging subscriber
+version = "0.3.3"                 #
+features = ["fmt", "env-filter"]  #
