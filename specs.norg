@@ -1,22 +1,182 @@
 @document.meta
-    title: specs
-    description: 
-    author: shift
-    categories: 
-    created: 2021-11-16
+    title: todo n' specs
+    description: TODO list for NeoSH core and specs
+    author: alejandro
+    categories: todo specs neosh core
+    created: 2021-11-09
     version: 0.1
 @end
 
-* Roadmap
+* Core TODO
+  This is the todo list for the initial NeoSH core, everything here is subject to changes.
 
-* Structure
+  - [x] Essentials
+    - [x] Readline
+      - [x] Vi mode
+      - [x] History
+      - [x] Sequences handling (`Ctrl-C`, `Ctrl-D`)
+    - [x] Paths (data, cache, config)
+    - [*] Logging
+  - [ ] Built-in commands
+    - [x] `cd`, refer to [this](https://unix.stackexchange.com/a/38809) link for more information
+    - [ ] `set_alias`, refer to [set_alias command](*** set_alias command) for more information
+    - [ ] `clear` (maybe a wrapper to cross-platform clear command. Windows uses `cls` and *nix systems uses `clear`)
+          *This is completely optional, but would allow us to make it without adding more external dependencies*
+  - [ ] Lua API
+    - [x] Lua REPL
+    - [*] Initial Lua stdlib expansion (`split`, `startswith`, etc)
+    - [ ] Expose built-in NeoSH commands as Lua functions
+    - [ ] Initial Lua transpiler
+      - [ ] Initial NeoSH core functions (`catch`, `echo`, etc)
+      - [ ] Pipes (`cat foo.txt | grep "bar"`)
+      - [ ] Logical operations (`&&`, `||`)
+      - [ ] Aliases
+      - [ ] Environment variables management (set, unset, get)
 
-* Features
+* Specs
+  NeoSH commands will use `xpcall` under the hood so we can have a better traceback if something fails.
+  
+  NeoSH will use the same syntax as BASH to retain compatibility, that means things like Pipes
+  and logical operations will be exactly the same.
 
-* Benchmarks
+  > *IMPORTANT*: Nothing in these specifications is final, everything is subject to change and not everything will be included.
 
-* Known bugs
+ ** Pipes
+    Because of `xpcall` function, our commands will internally return a boolean (aka status code) of the runned
+    command and then return an error or the command output based on that boolean value, e.g.
+    `neosh.echo("Hello")` will internally return `true` if was successfully executed and then return
+    the actual output to the shell. Thanks to this behavior, we will have an easier way to support pipes, e.g.
 
-* To-Do
+@code lua
+  -- Ran command: echo "Hello" | base64
+  -- Transpiled code:
+  --
+  -- Print "Hello" to the console
+  local echo_1 = neosh.echo("Hello")
 
-* Notes
+  -- If the command was executed successfully
+  -- then encode the output with base64 and return
+  -- the encoded string to the console
+  if echo_1 then
+    neosh.pipe("base64", echo_1)
+  end
+@end
+
+ ** Logical operations
+    Users should be able to use the same syntax as BASH for these operations, e.g. `echo "Hello" && echo " World"`.
+    This `&&` will be internally translated to Lua `and` and a NeoSH `catch` function will be used to handle both
+    commands execution and raise an error if one of them fails. Otherwise it will print the output to the user console.
+
+@code lua
+  neosh.catch(neosh.echo("Hello") and neosh.echo(" World"))
+@end
+
+ ** Aliases
+    Users should be able to declare custom aliases to their commands like in any other shell. NeoSH will allow two ways
+    of creating aliases.
+
+    NeoSH aliases are immutable by default, that means *you cannot* override existing aliases. Refer
+    to [mutable aliases](*** Mutable aliases) for more information.
+
+  *** Global aliases
+      This kind of aliases are handled in the user configuration file and will be available for
+      all NeoSH instances the user creates, e.g. when creating split windows with a multiplexer like tmux.
+      The user will be able to create global aliases in two ways.
+
+      1. `set_alias` command while in the shell (including a `-g` flag). This way will modify the aliases
+         table of the user configuration file without the user having to modify their configs.
+      2. Manually modifying the configuration file aliases table.
+
+      Global aliases are defined into your configuration file with the following syntax:
+
+@code lua
+  aliases = {
+    alias_name = {
+      alias_command,
+      { options },
+    },
+  }
+@end
+
+      As you can see, there's an options table in the alias definition. These options are the
+      following:
+
+      - `mutable`: `boolean`, defaults to `false`
+        - Sets if the alias command should be overwritten if the user sets the alias again.
+      - `environment`: `boolean`, defaults to `false`
+        - Sets if the alias is from an environment.
+
+  *** Local aliases
+      This kind of aliases are the same as in any other shell in the core functionality. They are
+      created with the `set_alias` command while in the shell, like global aliases. Unlike the other
+      shells, NeoSH extends the local aliases to give them super powers.
+
+      Common shells (BASH, ZSH, Fish) sets local aliases that are being deleted after finishing the
+      current shell session. NeoSH does this too, but also allows the user to create environment
+      aliases, that means the user will be allowed to change directory and NeoSH will automatically
+      search for a `.neosh_aliases` file and source it if the file exists and the user trusts the
+      aliases file.
+
+      > Environment aliases will be wiped after leaving the directory that contains the NeoSH aliases
+      > file.
+
+   **** Environment aliases
+        This kind of aliases can be created with `set_alias` command too, by using a `-e` flag. As
+        said before in the local aliases section, those are defined in a `.neosh_aliases` file in
+        the current working directory and are completely local to the working directory, that means
+        these aliases are being deleted once exiting from the directory that contains the
+        `.neosh_aliases` file.
+
+        However, we believe that dangerous aliases can exist. It is thanks to this that before
+        loading the environment aliases, we ask the user if he trusts the aliases of the local
+        `.neosh_aliases` file.
+
+        NeoSH will keep a local database in the configuration file with the following syntax:
+
+@code lua
+  trusted_environment_aliases = {
+    ["/path/to/directory"] = true | false
+  }
+@end
+
+        In that way, NeoSH will have a finer control over the trusted / untrusted environment
+        aliases and decide if they should be loaded or not. This will also allow the user to change
+        the trust state of the environment aliases files.
+
+        > The syntax of the `.neosh_aliases` file is exactly the same as the global aliases one.
+
+  *** set_alias command
+      This command allows the user to define custom aliases and receives optional flags.
+
+      This command syntax is the following:
+
+@code
+  set_alias [FLAGS] alias_name="alias command"
+@end
+
+      As we said before, the `set_alias` can receive optional flags. These flags are the following:
+
+      - `-g` | `--global`
+        - sets a global alias
+      - `-m` | `--mutable`
+        - sets a mutable alias
+      - `-e` | `--env`
+        - sets an environment alias
+
+  *** Mutable aliases
+      By default, NeoSH doesn't allow the user to override already defined aliases. But, why?
+
+      This is because we think aliases are an important feature of a shell and they should always
+      point to only an instruction that should be static because they were created with a purpose.
+
+      For example, if you create an alias called `ls` that executes `exa`, why would you change
+      `ls` alias behavior? It has one goal and should remain as this. We don't want an `ls` alias
+      that doesn't show your files, isn't it?
+
+      However, if the user wish to override some aliases, e.g. when loading environment aliases, the
+      user will need to make its global aliases mutable.
+
+
+@comment
+vim:sw=2:ts=2:cole=3:cocu=n:tw=100:norl:nofen:fdc=0:
+@end
