@@ -1,3 +1,5 @@
+use tracing::debug;
+
 use std::env;
 use std::path::PathBuf;
 
@@ -36,10 +38,11 @@ fn init() -> fs::NeoshPaths {
 }
 
 fn main() {
-    // Set up logging
-    neosh::log::setup();
     // Run initial tasks and get the NeoSH paths
     let neosh_paths = init();
+
+    // Set up logging
+    let _log_guard = neosh::log::setup(&neosh_paths.data);
 
     // ===== Readline setup ======
     let mut readline = Editor::<()>::new();
@@ -99,21 +102,30 @@ fn main() {
                 // Exit shell
                 "exit" => {
                     commands::exit(&mut readline, &line);
+                    debug!("Ran exit command");
+                    // TODO: Make an option to save history after every command instead of having to wait until
+                    // the user exits the shell
+                    debug!("Saving history");
+                    readline.save_history(&history_path).unwrap();
+                    debug!("Saved history");
                     return;
                 }
 
                 "cd" => {
                     commands::cd(&mut readline, &line, args);
+                    debug!("Ran cd command");
                     break;
                 }
 
                 "pwd" => {
                     commands::pwd(&mut readline, &line);
+                    debug!("Ran pwd command");
                     break;
                 }
 
                 "echo" => {
                     commands::echo(&mut readline, &line, args);
+                    debug!("Ran echo command");
                     break;
                 }
 
@@ -148,8 +160,5 @@ fn main() {
             }
         }
 
-        // TODO: Make an option to save history after every command instead of having to wait until
-        // the user exits the shell
-        readline.save_history(&history_path).unwrap();
     }
 }
