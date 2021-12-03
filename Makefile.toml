@@ -1,0 +1,13 @@
+[tasks.codestyle]
+command = "cargo"
+args = ["fmt", "--check"]
+
+[tasks.lint]
+command = "cargo"
+args = ["clippy"]
+
+[tasks.precommit]
+dependencies = [
+    "codestyle",
+    "lint"
+]
