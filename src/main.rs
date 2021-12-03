@@ -36,6 +36,8 @@ fn init() -> fs::NeoshPaths {
 }
 
 fn main() {
+    // Set up logging
+    neosh::log::setup();
     // Run initial tasks and get the NeoSH paths
     let neosh_paths = init();
 
