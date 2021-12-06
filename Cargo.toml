@@ -16,6 +16,7 @@ whoami = "1.2.0"                  # Utils for fetching user data
 rustyline = "9.0.0"               # Read user input
 tracing = "0.1.29"                #
 tracing-appender = "0.2.0"        # Logging
+peg = "0.7.0"                     # Parsing
 
 [dependencies.mlua]               # Lua interpreter
 version = "0.6.6"                 #
