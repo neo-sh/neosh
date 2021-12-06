@@ -97,6 +97,19 @@ end
 --
 end ]]
 
+neosh = setmetatable(neosh, {
+  __index = function(_, key)
+    return function(...)
+      local args = { ... }
+      local cmd = key
+      for _, arg in ipairs(args) do
+        cmd = cmd .. " " .. arg
+      end
+      os.execute(cmd)
+    end
+  end
+})
+
 return neosh
 
 -- vim: sw=2:ts=2:sts=2:tw=100:
