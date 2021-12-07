@@ -125,4 +125,4 @@ neosh = setmetatable(neosh, {
 
 return neosh
 
--- vim: sw=2:ts=2:sts=2:tw=100:
+-- vim: sw=4:ts=4:sts=4:tw=100:
