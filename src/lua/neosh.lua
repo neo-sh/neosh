@@ -14,52 +14,52 @@ neosh.prompt = require("neosh.prompt")
 
 --- Pretty print the given objects
 neosh.fprint = function(...)
-  local args = { ... }
-  for _, arg in ipairs(args) do
-    print(neosh.inspect(arg))
-  end
+    local args = { ... }
+    for _, arg in ipairs(args) do
+        print(neosh.inspect(arg))
+    end
 end
 
 --- Check if string is empty or if it is nil
 --- @tparam str string The string to be checked
 --- @return boolean
 neosh.is_empty = function(str)
-  return str == "" or str == nil
+    return str == "" or str == nil
 end
 
 --- Escape special characters in a string
 --- @tparam string str The string to be escaped
 --- @return string
 neosh.escape_str = function(str)
-  local escape_patterns = {
-    "%^",
-    "%$",
-    "%(",
-    "%)",
-    "%[",
-    "%]",
-    "%%",
-    "%.",
-    "%-",
-    "%*",
-    "%+",
-    "%?",
-  }
+    local escape_patterns = {
+        "%^",
+        "%$",
+        "%(",
+        "%)",
+        "%[",
+        "%]",
+        "%%",
+        "%.",
+        "%-",
+        "%*",
+        "%+",
+        "%?",
+    }
 
-  return str:gsub(("([%s])"):format(table.concat(escape_patterns)), "%%%1")
+    return str:gsub(("([%s])"):format(table.concat(escape_patterns)), "%%%1")
 end
 
 --- Extract the given table keys names and returns them
 --- @tparam table tbl The table to extract its keys
 --- @return table
 neosh.tbl_keys = function(tbl)
-  local keys = {}
+    local keys = {}
 
-  for key, _ in pairs(tbl) do
-    table.insert(keys, key)
-  end
+    for key, _ in pairs(tbl) do
+        table.insert(keys, key)
+    end
 
-  return keys
+    return keys
 end
 
 --- Search if a table contains a value
@@ -67,13 +67,13 @@ end
 --- @tparam any val The value to be looked for
 --- @return boolean
 neosh.has_value = function(tbl, val)
-  for _, value in ipairs(tbl) do
-    if value == val then
-      return true
+    for _, value in ipairs(tbl) do
+        if value == val then
+            return true
+        end
     end
-  end
 
-  return false
+    return false
 end
 
 --- Search if a table contains a key
@@ -81,13 +81,13 @@ end
 --- @tparam string key The key to be looked for
 --- @return boolean
 neosh.has_key = function(tbl, key)
-  for _, k in ipairs(neosh.tbl_keys(tbl)) do
-    if k == key then
-      return true
+    for _, k in ipairs(neosh.tbl_keys(tbl)) do
+        if k == key then
+            return true
+        end
     end
-  end
 
-  return false
+    return false
 end
 
 --- Splits a string at N instances of a separator
@@ -127,26 +127,75 @@ neosh.split = function(str, sep, kwargs)
 
     if trim_empty then
         for i = #str_tbl, 1, -1 do
-          if str_tbl[i] == "" then
-            table.remove(str_tbl, i)
-          end
+            if str_tbl[i] == "" then
+                table.remove(str_tbl, i)
+            end
         end
     end
 
     return str_tbl
 end
 
-neosh = setmetatable(neosh, {
-  __index = function(_, key)
-    return function(...)
-      local args = { ... }
-      local cmd = key
-      for _, arg in ipairs(args) do
-        cmd = cmd .. " " .. arg
-      end
-      os.execute(cmd)
+--- Filter a table using a predicate function
+--- @tparam table tbl
+--- @tparam function func
+--- @return table
+neosh.tbl_filter = function(tbl, func)
+    local filtered_tbl = {}
+    for _, value in pairs(tbl) do
+        if func(value) then
+            table.insert(filtered_tbl, value)
+        end
     end
-  end
+    return filtered_tbl
+end
+
+--- Returns a deep copy of the given object
+--- @tparam any orig
+--- @return any
+neosh.deep_copy = function(orig)
+    local copy
+    local orig_type = type(orig)
+    if orig_type == "table" then
+        copy = {}
+        for orig_key, orig_value in next, orig, nil do
+            copy[neosh.deep_copy(orig_key)] = neosh.deep_copy(orig_value)
+        end
+        setmetatable(copy, neosh.deep_copy(getmetatable(orig)))
+    else
+        copy = orig
+    end
+
+    return copy
+end
+
+--- Check if strings starts with given pattern
+--- @tparam string str
+--- @tparam string pattern
+--- @return boolean
+neosh.starts_with = function(str, pattern)
+    return str:sub(1, #pattern) == pattern
+end
+
+--- Check if strings ends with given pattern
+--- @tparam string str
+--- @tparam string pattern
+--- @return boolean
+neosh.ends_with = function(str, pattern)
+    return str:sub(-#pattern) == pattern
+end
+
+neosh = setmetatable(neosh, {
+    __index = function(_, key)
+        return function(...)
+            local args = { ... }
+            local cmd = key
+            for _, arg in ipairs(args) do
+                cmd = cmd .. " " .. arg
+            end
+            os.execute(cmd)
+        end
+    end
 })
 
 return neosh
