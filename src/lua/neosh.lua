@@ -90,12 +90,51 @@ neosh.has_key = function(tbl, key)
   return false
 end
 
---- TODO: Splits a string at N instances of a separator
---[[ neostd.split = function(str, sep, kwargs)
---
--- NOTE: kwargs will cover the Neovim 'vim.split' arguments and also a "python-like times to split argument"
---
-end ]]
+--- Splits a string at N instances of a separator
+--- @tparam string str The string to split
+--- @tparam string sep The separator to be used when splitting the string
+--- @tparam table kwargs Extra arguments:
+---         - plain, boolean: pass literal `sep` to `string.find` call
+---         - trim_empty, boolean: remove empty items from the returned table
+---         - splits, number: number of instances to split the string
+--- @return table
+neosh.split = function(str, sep, kwargs)
+    if not sep then
+        sep = "%s"
+    end
+    kwargs = kwargs or {}
+    local plain = kwargs.plain
+    local trim_empty = kwargs.trim_empty
+    local splits = kwargs.splits or -1
+
+    local str_tbl = {}
+    local nField, nStart = 1, 1
+    local nFirst, nLast
+    if plain then
+        nFirst, nLast = str:find(sep, nStart, plain)
+    else
+        nFirst, nLast = str:find(sep, nStart)
+    end
+
+    while nFirst and splits ~= 0 do
+        str_tbl[nField] = str:sub(nStart, nFirst - 1)
+        nField = nField + 1
+        nStart = nLast + 1
+        nFirst, nLast = str:find(sep, nStart)
+        splits = splits - 1
+    end
+    str_tbl[nField] = str:sub(nStart)
+
+    if trim_empty then
+        for i = #str_tbl, 1, -1 do
+          if str_tbl[i] == "" then
+            table.remove(str_tbl, i)
+          end
+        end
+    end
+
+    return str_tbl
+end
 
 neosh = setmetatable(neosh, {
   __index = function(_, key)
@@ -112,4 +151,4 @@ neosh = setmetatable(neosh, {
 
 return neosh
 
--- vim: sw=2:ts=2:sts=2:tw=100:
+-- vim: sw=4:ts=4:sts=4:tw=100:
