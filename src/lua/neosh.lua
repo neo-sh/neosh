@@ -150,6 +150,54 @@ neosh.tbl_filter = function(tbl, func)
     return filtered_tbl
 end
 
+
+--- Merges two or more map-like tables
+--- @tparam string behavior Decides what to do if a key is found in more than one map
+--- @tparam boolean deep_extend Decides if subtables should be also merged
+--- @vararg table
+--- @return table
+--- @private
+local extend_table = function(behavior, deep_extend, ...)
+    if behavior ~= "keep" and behavior ~= "error" and behavior ~= "force" then
+        error(string.format("Invalid tbl_extend behavior: '%s'", behavior))
+    end
+
+    local extended_tbl = {}
+    for i = 1, select("#", ...) do
+        local tbl = select(i, ...)
+        if tbl then
+            for k, v in pairs(tbl) do
+                if deep_extend and type(tbl[k]) == "table" and type(v) == "table" then
+                    extended_tbl[k] = neosh.tbl_extend(behavior, deep_extend, tbl[k], v)
+                elseif behavior ~= "force" and extended_tbl[k] ~= nil then
+                    if behavior == "error" then
+                        error(string.format("Key '%s' found in more than one map", k))
+                    end
+                else
+                    extended_tbl[k] = v
+                end
+            end
+        end
+    end
+    return extended_tbl
+end
+
+--- Merges two or more map-like tables
+--- @tparam string behavior Decides what to do if a key is found in more than one map
+--- @vararg table
+--- @return table
+neosh.tbl_extend = function(behavior, ...)
+    extend_table(behavior, false, ...)
+end
+
+--- Deeply merges two or more map-like tables and its sub-tables
+--- @tparam string behavior Decides what to do if a key is found in more than one map
+--- @vararg table
+--- @return table
+neosh.tbl_deep_extend = function(behavior, ...)
+    extend_table(behavior, true, ...)
+end
+
 --- Returns a deep copy of the given object
 --- @tparam any orig
 --- @return any
