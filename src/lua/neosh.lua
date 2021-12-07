@@ -150,6 +150,17 @@ neosh.tbl_filter = function(tbl, func)
     return filtered_tbl
 end
 
+--- Apply a function to all values of a table
+--- @tparam table tbl
+--- @tparam function func
+--- @return table
+neosh.tbl_map = function(tbl, func)
+    local map_tbl = {}
+    for k, v in pairs(tbl) do
+        map_tbl[k] = func(v)
+    end
+    return map_tbl
+end
 
 --- Merges two or more map-like tables
 --- @tparam string behavior Decides what to do if a key is found in more than one map
