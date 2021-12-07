@@ -30,6 +30,7 @@ jobs:
         with:
           command: make
           args: rustfmt
+      - uses: Swatinem/rust-cache@v1
 
       - name: Commit formatted source files
         run: |
