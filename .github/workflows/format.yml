@@ -25,12 +25,12 @@ jobs:
         with:
           command: install
           args: --debug cargo-make
+      - uses: Swatinem/rust-cache@v1
       - name: Run make rustfmt
         uses: actions-rs/cargo@v1
         with:
           command: make
           args: rustfmt
-      - uses: Swatinem/rust-cache@v1
 
       - name: Commit formatted source files
         run: |
