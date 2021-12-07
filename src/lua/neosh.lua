@@ -90,12 +90,159 @@ neosh.has_key = function(tbl, key)
     return false
 end
 
---- TODO: Splits a string at N instances of a separator
---[[ neostd.split = function(str, sep, kwargs)
---
--- NOTE: kwargs will cover the Neovim 'vim.split' arguments and also a "python-like times to split argument"
---
-end ]]
+--- Splits a string at N instances of a separator
+--- @tparam string str The string to split
+--- @tparam string sep The separator to be used when splitting the string
+--- @tparam table kwargs Extra arguments:
+---         - plain, boolean: pass literal `sep` to `string.find` call
+---         - trim_empty, boolean: remove empty items from the returned table
+---         - splits, number: number of instances to split the string
+--- @return table
+neosh.split = function(str, sep, kwargs)
+    if not sep then
+        sep = "%s"
+    end
+    kwargs = kwargs or {}
+    local plain = kwargs.plain
+    local trim_empty = kwargs.trim_empty
+    local splits = kwargs.splits or -1
+
+    local str_tbl = {}
+    local nField, nStart = 1, 1
+    local nFirst, nLast
+    if plain then
+        nFirst, nLast = str:find(sep, nStart, plain)
+    else
+        nFirst, nLast = str:find(sep, nStart)
+    end
+
+    while nFirst and splits ~= 0 do
+        str_tbl[nField] = str:sub(nStart, nFirst - 1)
+        nField = nField + 1
+        nStart = nLast + 1
+        nFirst, nLast = str:find(sep, nStart)
+        splits = splits - 1
+    end
+    str_tbl[nField] = str:sub(nStart)
+
+    if trim_empty then
+        for i = #str_tbl, 1, -1 do
+            if str_tbl[i] == "" then
+                table.remove(str_tbl, i)
+            end
+        end
+    end
+
+    return str_tbl
+end
+
+--- Filter a table using a predicate function
+--- @tparam table tbl
+--- @tparam function func
+--- @return table
+neosh.tbl_filter = function(tbl, func)
+    local filtered_tbl = {}
+    for _, value in pairs(tbl) do
+        if func(value) then
+            table.insert(filtered_tbl, value)
+        end
+    end
+    return filtered_tbl
+end
+
+--- Apply a function to all values of a table
+--- @tparam table tbl
+--- @tparam function func
+--- @return table
+neosh.tbl_map = function(tbl, func)
+    local map_tbl = {}
+    for k, v in pairs(tbl) do
+        map_tbl[k] = func(v)
+    end
+    return map_tbl
+end
+
+--- Merges two or more map-like tables
+--- @tparam string behavior Decides what to do if a key is found in more than one map
+--- @tparam boolean deep_extend Decides if subtables should be also merged
+--- @vararg table
+--- @return table
+--- @private
+local extend_table = function(behavior, deep_extend, ...)
+    if behavior ~= "keep" and behavior ~= "error" and behavior ~= "force" then
+        error(string.format("Invalid tbl_extend behavior: '%s'", behavior))
+    end
+
+    local extended_tbl = {}
+    for i = 1, select("#", ...) do
+        local tbl = select(i, ...)
+        if tbl then
+            for k, v in pairs(tbl) do
+                if deep_extend and type(tbl[k]) == "table" and type(v) == "table" then
+                    extended_tbl[k] = neosh.tbl_extend(behavior, deep_extend, tbl[k], v)
+                elseif behavior ~= "force" and extended_tbl[k] ~= nil then
+                    if behavior == "error" then
+                        error(string.format("Key '%s' found in more than one map", k))
+                    end
+                else
+                    extended_tbl[k] = v
+                end
+            end
+        end
+    end
+    return extended_tbl
+end
+
+--- Merges two or more map-like tables
+--- @tparam string behavior Decides what to do if a key is found in more than one map
+--- @vararg table
+--- @return table
+neosh.tbl_extend = function(behavior, ...)
+    extend_table(behavior, false, ...)
+end
+
+--- Deeply merges two or more map-like tables and its sub-tables
+--- @tparam string behavior Decides what to do if a key is found in more than one map
+--- @vararg table
+--- @return table
+neosh.tbl_deep_extend = function(behavior, ...)
+    extend_table(behavior, true, ...)
+end
+
+--- Returns a deep copy of the given object
+--- @tparam any orig
+--- @return any
+neosh.deep_copy = function(orig)
+    local copy
+    local orig_type = type(orig)
+    if orig_type == "table" then
+        copy = {}
+        for orig_key, orig_value in next, orig, nil do
+            copy[neosh.deep_copy(orig_key)] = neosh.deep_copy(orig_value)
+        end
+        setmetatable(copy, neosh.deep_copy(getmetatable(orig)))
+    else
+        copy = orig
+    end
+
+    return copy
+end
+
+--- Check if strings starts with given pattern
+--- @tparam string str
+--- @tparam string pattern
+--- @return boolean
+neosh.starts_with = function(str, pattern)
+    return str:sub(1, #pattern) == pattern
+end
+
+--- Check if strings ends with given pattern
+--- @tparam string str
+--- @tparam string pattern
+--- @return boolean
+neosh.ends_with = function(str, pattern)
+    return str:sub(-#pattern) == pattern
+end
 
 neosh = setmetatable(neosh, {
     __index = function(_, key)
@@ -107,9 +254,9 @@ neosh = setmetatable(neosh, {
             end
             os.execute(cmd)
         end
-    end,
+    end
 })
 
 return neosh
 
--- vim: sw=2:ts=2:sts=2:tw=100:
+-- vim: sw=4:ts=4:sts=4:tw=100:
