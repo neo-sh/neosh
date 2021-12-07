@@ -254,7 +254,7 @@ neosh = setmetatable(neosh, {
             end
             os.execute(cmd)
         end
-    end
+    end,
 })
 
 return neosh
