@@ -14,52 +14,52 @@ neosh.prompt = require("neosh.prompt")
 
 --- Pretty print the given objects
 neosh.fprint = function(...)
-  local args = { ... }
-  for _, arg in ipairs(args) do
-    print(neosh.inspect(arg))
-  end
+    local args = { ... }
+    for _, arg in ipairs(args) do
+        print(neosh.inspect(arg))
+    end
 end
 
 --- Check if string is empty or if it is nil
 --- @tparam str string The string to be checked
 --- @return boolean
 neosh.is_empty = function(str)
-  return str == "" or str == nil
+    return str == "" or str == nil
 end
 
 --- Escape special characters in a string
 --- @tparam string str The string to be escaped
 --- @return string
 neosh.escape_str = function(str)
-  local escape_patterns = {
-    "%^",
-    "%$",
-    "%(",
-    "%)",
-    "%[",
-    "%]",
-    "%%",
-    "%.",
-    "%-",
-    "%*",
-    "%+",
-    "%?",
-  }
+    local escape_patterns = {
+        "%^",
+        "%$",
+        "%(",
+        "%)",
+        "%[",
+        "%]",
+        "%%",
+        "%.",
+        "%-",
+        "%*",
+        "%+",
+        "%?",
+    }
 
-  return str:gsub(("([%s])"):format(table.concat(escape_patterns)), "%%%1")
+    return str:gsub(("([%s])"):format(table.concat(escape_patterns)), "%%%1")
 end
 
 --- Extract the given table keys names and returns them
 --- @tparam table tbl The table to extract its keys
 --- @return table
 neosh.tbl_keys = function(tbl)
-  local keys = {}
+    local keys = {}
 
-  for key, _ in pairs(tbl) do
-    table.insert(keys, key)
-  end
+    for key, _ in pairs(tbl) do
+        table.insert(keys, key)
+    end
 
-  return keys
+    return keys
 end
 
 --- Search if a table contains a value
@@ -67,13 +67,13 @@ end
 --- @tparam any val The value to be looked for
 --- @return boolean
 neosh.has_value = function(tbl, val)
-  for _, value in ipairs(tbl) do
-    if value == val then
-      return true
+    for _, value in ipairs(tbl) do
+        if value == val then
+            return true
+        end
     end
-  end
 
-  return false
+    return false
 end
 
 --- Search if a table contains a key
@@ -81,13 +81,13 @@ end
 --- @tparam string key The key to be looked for
 --- @return boolean
 neosh.has_key = function(tbl, key)
-  for _, k in ipairs(neosh.tbl_keys(tbl)) do
-    if k == key then
-      return true
+    for _, k in ipairs(neosh.tbl_keys(tbl)) do
+        if k == key then
+            return true
+        end
     end
-  end
 
-  return false
+    return false
 end
 
 --- TODO: Splits a string at N instances of a separator
@@ -98,16 +98,16 @@ end
 end ]]
 
 neosh = setmetatable(neosh, {
-  __index = function(_, key)
-    return function(...)
-      local args = { ... }
-      local cmd = key
-      for _, arg in ipairs(args) do
-        cmd = cmd .. " " .. arg
-      end
-      os.execute(cmd)
-    end
-  end
+    __index = function(_, key)
+        return function(...)
+            local args = { ... }
+            local cmd = key
+            for _, arg in ipairs(args) do
+                cmd = cmd .. " " .. arg
+            end
+            os.execute(cmd)
+        end
+    end,
 })
 
 return neosh
