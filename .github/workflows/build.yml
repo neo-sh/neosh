@@ -1,0 +1,19 @@
+name: Build
+on: [push, pull_request]
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+      - name: Build NeoSH
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
