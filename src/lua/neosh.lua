@@ -11,6 +11,7 @@ local neosh = neosh or {}
 --- Return human-readable tables
 neosh.inspect = require("inspect")
 neosh.prompt = require("neosh.prompt")
+neosh.command = require("neosh.command")
 
 --- Pretty print the given objects
 neosh.fprint = function(...)
