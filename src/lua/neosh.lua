@@ -62,6 +62,19 @@ neosh.tbl_keys = function(tbl)
   return keys
 end
 
+--- Extract the given table values names and returns them
+--- @tparam table tbl The table to extract its values from
+--- @return table
+neosh.tbl_values = function(tbl)
+  local keys = {}
+
+  for _, value in pairs(tbl) do
+    table.insert(keys, value)
+  end
+
+  return keys
+end
+
 --- Search if a table contains a value
 --- @tparam table tbl The table to look for the given value
 --- @tparam any val The value to be looked for
