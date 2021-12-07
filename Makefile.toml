@@ -1,6 +1,16 @@
-[tasks.codestyle]
+[tasks.stylua]
+command = "stylua"
+args = ["--config-path=./.stylua.toml", "-g", "*.lua", "--", "./src/lua"]
+
+[tasks.rustfmt]
 command = "cargo"
 args = ["fmt", "--check"]
+
+[tasks.codestyle]
+run_task = [
+    { name = "stylua" },
+    { name = "rustfmt" }
+]
 
 [tasks.lint]
 command = "cargo"
