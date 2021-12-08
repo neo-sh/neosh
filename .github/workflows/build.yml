@@ -70,7 +70,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: "neosh-windows-x86_64"
-          path: "target\\release\\neosh"
+          path: "target\\release\\neosh.exe"
           if-no-files-found: error
           retention-days: 7
 
