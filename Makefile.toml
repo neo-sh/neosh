@@ -4,7 +4,7 @@ args = ["--config-path=./.stylua.toml", "-g", "*.lua", "--", "./src/lua"]
 
 [tasks.rustfmt]
 command = "cargo"
-args = ["fmt", "--check"]
+args = ["fmt", "--", "--check"]
 
 [tasks.codestyle]
 run_task = [

@@ -1,7 +1,7 @@
 use mlua::prelude::{LuaResult, LuaTable};
 use mlua::Lua;
 
-use tracing::{info, warn, error, debug, trace};
+use tracing::{debug, error, info, trace, warn};
 
 const NEOSH_STDLIB: &str = include_str!("../lua/neosh.lua");
 
