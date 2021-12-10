@@ -2,7 +2,7 @@ name: Build
 on: [push, pull_request]
 
 jobs:
-  neosh:
+  linux:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -18,4 +18,59 @@ jobs:
         with:
           command: build
           args: --release
+      - name: Upload NeoSH Linux binary
+        uses: actions/upload-artifact@v2
+        with:
+          name: "neosh-linux-x86_64"
+          path: "target/release/neosh"
+          if-no-files-found: error
+          retention-days: 7
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+      - uses: Swatinem/rust-cache@v1
+      - name: Build NeoSH
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+      - name: Upload NeoSH Linux binary
+        uses: actions/upload-artifact@v2
+        with:
+          name: "neosh-macos-x86_64"
+          path: "target/release/neosh"
+          if-no-files-found: error
+          retention-days: 7
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+      - uses: Swatinem/rust-cache@v1
+      - name: Build NeoSH
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+      - name: Upload NeoSH Linux binary
+        uses: actions/upload-artifact@v2
+        with:
+          name: "neosh-windows-x86_64.exe"
+          path: "target\\release\\neosh.exe"
+          if-no-files-found: error
+          retention-days: 7
 
