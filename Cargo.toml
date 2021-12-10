@@ -29,4 +29,4 @@ cargo-features = ["named-profiles"] # Enable custom profiles
 
 [profile.build]                     # Size optimizations that will hurt build speed
 opt-level = "z"                     # Optimize for size
-codegen-units = "1"                 # Build speed -> Executable size
+codegen-units = 1                   # Build speed -> Executable size
