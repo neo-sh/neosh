@@ -17,7 +17,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --profile sized
+          args: --profile optimized
       - name: Upload NeoSH Linux binary
         uses: actions/upload-artifact@v2
         with:
@@ -41,7 +41,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --profile sized
+          args: --profile optimized
       - name: Upload NeoSH MacOS binary
         uses: actions/upload-artifact@v2
         with:
@@ -65,7 +65,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --profile sized
+          args: --profile optimized
       - name: Upload NeoSH Windows binary
         uses: actions/upload-artifact@v2
         with:
