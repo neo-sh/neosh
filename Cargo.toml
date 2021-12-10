@@ -28,5 +28,6 @@ features = ["fmt", "env-filter"]    #
 cargo-features = ["named-profiles"] # Enable custom profiles
 
 [profile.sized]                     # Size optimizations that will hurt build speed
+inherits = "release"                # Which profile we inherit
 opt-level = "z"                     # Optimize for size
 codegen-units = 1                   # Build speed -> Executable size
