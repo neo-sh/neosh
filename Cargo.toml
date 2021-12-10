@@ -24,3 +24,7 @@ features = ["vendored", "luajit"] # Build LuaJIT on `cargo build`
 [dependencies.tracing-subscriber] # Logging subscriber
 version = "0.3.3"                 #
 features = ["fmt", "env-filter"]  #
+
+[profile.build]     # Size optimizations that will hurt build speed
+opt-level = "z"     # Optimize for size
+codegen-units = "1" # Build speed -> Executable size
