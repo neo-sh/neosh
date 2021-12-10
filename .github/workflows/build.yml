@@ -42,7 +42,7 @@ jobs:
         with:
           command: build
           args: --release
-      - name: Upload NeoSH Linux binary
+      - name: Upload NeoSH MacOS binary
         uses: actions/upload-artifact@v2
         with:
           name: "neosh-macos-x86_64"
@@ -66,7 +66,7 @@ jobs:
         with:
           command: build
           args: --release
-      - name: Upload NeoSH Linux binary
+      - name: Upload NeoSH Windows binary
         uses: actions/upload-artifact@v2
         with:
           name: "neosh-windows-x86_64.exe"
