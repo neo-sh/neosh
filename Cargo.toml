@@ -11,16 +11,23 @@ readme = "README.md"
 include = ["src/*", "Cargo.*", "README.md", "LICENSE"]
 
 [dependencies]
-dirs = "4.0.0"                    # Crossplatform directories manipulation
-whoami = "1.2.0"                  # Utils for fetching user data
-rustyline = "9.0.0"               # Read user input
-tracing = "0.1.29"                #
-tracing-appender = "0.2.0"        # Logging
+dirs = "4.0.0"                      # Crossplatform directories manipulation
+whoami = "1.2.0"                    # Utils for fetching user data
+rustyline = "9.0.0"                 # Read user input
+tracing = "0.1.29"                  #
+tracing-appender = "0.2.0"          # Logging
 
-[dependencies.mlua]               # Lua interpreter
-version = "0.6.6"                 #
-features = ["vendored", "luajit"] # Build LuaJIT on `cargo build`
+[dependencies.mlua]                 # Lua interpreter
+version = "0.6.6"                   #
+features = ["vendored", "luajit"]   # Build LuaJIT on `cargo build`
 
-[dependencies.tracing-subscriber] # Logging subscriber
-version = "0.3.3"                 #
-features = ["fmt", "env-filter"]  #
+[dependencies.tracing-subscriber]   # Logging subscriber
+version = "0.3.3"                   #
+features = ["fmt", "env-filter"]    #
+
+cargo-features = ["named-profiles"] # Enable custom profiles
+
+[profile.optimized]                 # Size optimizations that will hurt build speed
+inherits = "release"                # Which profile we inherit
+opt-level = "z"                     # Optimize for size
+codegen-units = 1                   # Build speed -> Executable size
