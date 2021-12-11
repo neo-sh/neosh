@@ -1,6 +1,6 @@
 //! All built-in commands available in neosh
 
-use tracing::{error, debug};
+use tracing::error;
 use crate::log::utils::command;
 
 use std::{
