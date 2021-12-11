@@ -5,35 +5,21 @@ use tracing::{debug, error, info, trace, warn};
 
 const NEOSH_STDLIB: &str = include_str!("../lua/neosh.lua");
 
-fn info(_: &Lua, msg: String) -> LuaResult<()> {
-    let msg = msg.as_str();
-    info!("{}", msg);
-    Ok(())
+macro_rules! import_log {
+    ($level:ident) => {
+        fn $level(_: &Lua, msg: String) -> LuaResult<()> {
+            let msg = msg.as_str();
+            $level!("{}", msg);
+            Ok(())
+        }
+    }
 }
 
-fn warn(_: &Lua, msg: String) -> LuaResult<()> {
-    let msg = msg.as_str();
-    warn!("{}", msg);
-    Ok(())
-}
-
-fn error(_: &Lua, msg: String) -> LuaResult<()> {
-    let msg = msg.as_str();
-    error!("{}", msg);
-    Ok(())
-}
-
-fn debug(_: &Lua, msg: String) -> LuaResult<()> {
-    let msg = msg.as_str();
-    debug!("{}", msg);
-    Ok(())
-}
-
-fn trace(_: &Lua, msg: String) -> LuaResult<()> {
-    let msg = msg.as_str();
-    trace!("{}", msg);
-    Ok(())
-}
+import_log!(info);
+import_log!(warn);
+import_log!(error);
+import_log!(debug);
+import_log!(trace);
 
 // Initialize Lua globals and logging
 pub fn init(lua: &Lua) -> LuaResult<LuaTable> {
