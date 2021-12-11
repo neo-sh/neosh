@@ -16,3 +16,11 @@ pub fn setup(data_dir: &PathBuf) -> WorkerGuard {
 
     guard
 }
+
+pub mod utils {
+    use tracing::debug;
+
+    pub fn command(name: &str) {
+        debug!("Executing built-in `{}` command", name);
+    }
+}
