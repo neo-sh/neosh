@@ -1,8 +1,6 @@
 use std::path::PathBuf;
 use tracing_appender::non_blocking::WorkerGuard;
 
-use tracing::debug;
-
 use tracing_subscriber::{fmt::Subscriber, EnvFilter};
 /// Set up tracing stuff
 pub fn setup(data_dir: &PathBuf) -> WorkerGuard {
@@ -20,6 +18,8 @@ pub fn setup(data_dir: &PathBuf) -> WorkerGuard {
 }
 
 pub mod utils {
+    use tracing::debug;
+
     pub fn command(name: &str) {
         debug!("Executing built-in `{}` command", name);
     }
