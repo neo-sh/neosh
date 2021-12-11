@@ -1,3 +1,5 @@
+//! NeoSH Lua manager
+
 use mlua::prelude::{LuaResult, LuaTable};
 use mlua::Lua;
 
@@ -5,6 +7,7 @@ use tracing::{debug, error, info, trace, warn};
 
 const NEOSH_STDLIB: &str = include_str!("../lua/neosh.lua");
 
+/// Generate log functions that can be bridged into Lua
 macro_rules! import_log {
     ($level:ident) => {
         fn $level(_: &Lua, msg: String) -> LuaResult<()> {
@@ -21,7 +24,7 @@ import_log!(error);
 import_log!(debug);
 import_log!(trace);
 
-// Initialize Lua globals and logging
+/// Initialize Lua globals and logging
 pub fn init(lua: &Lua) -> LuaResult<LuaTable> {
     debug!("Initializing NeoSH Lua stdlib");
     // ===== Setup package path so we can require scripts
