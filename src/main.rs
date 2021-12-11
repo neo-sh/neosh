@@ -68,12 +68,12 @@ fn main() {
 
     // Load NeoSH Lua stdlib
     nlua::init(&lua).unwrap();
-    debug!("Loaded NeoSH Lua stdlibg");
+    debug!("Loaded NeoSH Lua stdlib");
 
     // fetch username and hostname
     let user = whoami::username();
     let host = whoami::hostname();
-    debug!("Fetched user data: {}@{}", &user, &host)
+    debug!("Fetched user data: {}@{}", &user, &host);
 
     loop {
         let cwd = env::current_dir()
