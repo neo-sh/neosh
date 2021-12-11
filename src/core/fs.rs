@@ -1,8 +1,11 @@
+//! NeoSH files
+
 use std::ffi;
 use std::fs;
 use std::io;
 use std::path::PathBuf;
 
+/// NeoSH path storage
 pub struct NeoshPaths {
     pub data: PathBuf,
     pub cache: PathBuf,
@@ -11,6 +14,7 @@ pub struct NeoshPaths {
 
 impl NeoshPaths {
     // TODO: expose this stdpath function as a Lua function
+    /// Fetch path
     pub fn stdpath(self, kind: &str) -> Result<String, ffi::OsString> {
         let stdpath: PathBuf = match kind {
             "data" => self.data,
@@ -21,6 +25,8 @@ impl NeoshPaths {
         let path = stdpath.into_os_string().into_string()?;
         Ok(path)
     }
+
+    /// Set up NeoSH paths
     pub fn create_neosh_dirs(&self) -> Result<(), io::Error> {
         let paths = vec![&self.data, &self.cache, &self.config];
         for path in paths.iter() {
