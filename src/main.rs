@@ -1,4 +1,4 @@
-use tracing::debug;
+use tracing::{error, debug};
 
 use std::env;
 use std::path::PathBuf;
@@ -46,27 +46,34 @@ fn main() {
 
     // ===== Readline setup ======
     let mut readline = Editor::<()>::new();
+    debug!("Loaded readline");
     // NOTE: change this after establishing the initial configurations setup
     // set mode to Vi instead of the default one (Emacs)
     readline.set_edit_mode(EditMode::Vi);
+    debug!("Set edit mode to Vi");
 
     // Setup history file path
     let mut history_path = PathBuf::from(&neosh_paths.data);
     history_path.push(".neosh_history");
     let history_path = history_path.into_os_string().into_string().unwrap();
+    debug!("Set up history file path: {}", history_path);
 
     // Load previous history and ignore errors if there isn't a history file
     let _ = readline.load_history(&history_path);
+    debug!("Loaded history");
 
     // ===== Lua setup ===========
     let lua = Lua::new();
+    debug!("Set up Lua instance");
 
     // Load NeoSH Lua stdlib
     nlua::init(&lua).unwrap();
+    debug!("Loaded NeoSH Lua stdlibg");
 
     // fetch username and hostname
     let user = whoami::username();
     let host = whoami::hostname();
+    debug!("Fetched user data: {}@{}", &user, &host)
 
     loop {
         let cwd = env::current_dir()
@@ -102,7 +109,6 @@ fn main() {
                 // Exit shell
                 "exit" => {
                     commands::exit(&mut readline, &line);
-                    debug!("Ran exit command");
                     // TODO: Make an option to save history after every command instead of having to wait until
                     // the user exits the shell
                     debug!("Saving history");
@@ -113,19 +119,16 @@ fn main() {
 
                 "cd" => {
                     commands::cd(&mut readline, &line, args);
-                    debug!("Ran cd command");
                     break;
                 }
 
                 "pwd" => {
                     commands::pwd(&mut readline, &line);
-                    debug!("Ran pwd command");
                     break;
                 }
 
                 "echo" => {
                     commands::echo(&mut readline, &line, args);
-                    debug!("Ran echo command");
                     break;
                 }
 
@@ -134,6 +137,7 @@ fn main() {
                     Ok(values) => {
                         // Save command to history and print the output
                         readline.add_history_entry(&line);
+                        debug!("Saved previous line to history");
                         println!(
                             "{}",
                             values
@@ -153,7 +157,7 @@ fn main() {
                         prompt = "> ".to_string();
                     }
                     Err(err) => {
-                        eprintln!("error: {}", err);
+                        error!("Unrecognised Lua error: {}", err);
                         break;
                     }
                 },
