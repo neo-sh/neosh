@@ -1,3 +1,5 @@
+cargo-features = ["named-profiles"] # Enable custom profiles
+
 [package]
 name = "neosh"
 version = "0.1.0"
@@ -24,8 +26,6 @@ features = ["vendored", "luajit"]   # Build LuaJIT on `cargo build`
 [dependencies.tracing-subscriber]   # Logging subscriber
 version = "0.3.3"                   #
 features = ["fmt", "env-filter"]    #
-
-cargo-features = ["named-profiles"] # Enable custom profiles
 
 [profile.optimized]                 # Size optimizations that will hurt build speed
 inherits = "release"                # Which profile we inherit
