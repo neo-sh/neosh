@@ -1,5 +1,3 @@
-cargo-features = ["named-profiles"] # Enable custom profiles
-
 [package]
 name = "neosh"
 version = "0.1.0"
