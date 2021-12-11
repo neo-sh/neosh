@@ -7,36 +7,37 @@ const NEOSH_STDLIB: &str = include_str!("../lua/neosh.lua");
 
 fn info(_: &Lua, msg: String) -> LuaResult<()> {
     let msg = msg.as_str();
-    info!(msg);
+    info!("{}", msg);
     Ok(())
 }
 
 fn warn(_: &Lua, msg: String) -> LuaResult<()> {
     let msg = msg.as_str();
-    warn!(msg);
+    warn!("{}", msg);
     Ok(())
 }
 
 fn error(_: &Lua, msg: String) -> LuaResult<()> {
     let msg = msg.as_str();
-    error!(msg);
+    error!("{}", msg);
     Ok(())
 }
 
 fn debug(_: &Lua, msg: String) -> LuaResult<()> {
     let msg = msg.as_str();
-    debug!(msg);
+    debug!("{}", msg);
     Ok(())
 }
 
 fn trace(_: &Lua, msg: String) -> LuaResult<()> {
     let msg = msg.as_str();
-    trace!(msg);
+    trace!("{}", msg);
     Ok(())
 }
 
 // Initialize Lua globals and logging
 pub fn init(lua: &Lua) -> LuaResult<LuaTable> {
+    debug!("Initializing NeoSH Lua stdlib");
     // ===== Setup package path so we can require scripts
     lua.load(
         r#"
@@ -47,6 +48,7 @@ pub fn init(lua: &Lua) -> LuaResult<LuaTable> {
     "#,
     )
     .exec()?;
+    debug!("Set up package path");
 
     let globals = lua.globals();
 
@@ -57,6 +59,7 @@ pub fn init(lua: &Lua) -> LuaResult<LuaTable> {
     globals.set("neosh", lua_neosh)?;
 
     lua.load(NEOSH_STDLIB).set_name("neosh")?.exec()?;
+    debug!("Loaded NeoSH Lua stdlib");
 
     // ===== Set logging functions
     let lua_log = lua.create_table()?;
@@ -66,6 +69,8 @@ pub fn init(lua: &Lua) -> LuaResult<LuaTable> {
     lua_log.set("debug", lua.create_function(debug)?)?;
     lua_log.set("trace", lua.create_function(trace)?)?;
     globals.set("log", lua_log)?;
+
+    debug!("Set up logging for Lua");
 
     Ok(globals)
 }
