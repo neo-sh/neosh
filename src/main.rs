@@ -1,4 +1,4 @@
-use tracing::{error, debug};
+use tracing::{debug, error};
 
 use std::env;
 use std::path::PathBuf;

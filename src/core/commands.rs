@@ -1,7 +1,7 @@
 //! All built-in commands available in neosh
 
-use tracing::error;
 use crate::log::utils::command;
+use tracing::error;
 
 use std::{
     env,

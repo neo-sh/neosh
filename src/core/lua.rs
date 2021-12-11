@@ -12,7 +12,7 @@ macro_rules! import_log {
             $level!("{}", msg);
             Ok(())
         }
-    }
+    };
 }
 
 import_log!(info);
