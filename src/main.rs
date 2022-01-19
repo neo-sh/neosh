@@ -103,7 +103,7 @@ fn main() {
             let mut args = line.trim().split_whitespace();
             let command = args.next().unwrap();
 
-            let parsed_command = neosh::core::commands::parser::parse(&line);
+            let parsed_command = neosh::core::commands::parser::parse(&line.trim().to_string());
 
             println!("{:?}", parsed_command);
 
