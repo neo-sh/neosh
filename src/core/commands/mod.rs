@@ -8,6 +8,9 @@ use std::{
     path::{Path, PathBuf},
     str::SplitWhitespace,
 };
+
+pub mod parser;
+
 type EEditor = rustyline::Editor<()>;
 
 /// Exit shell

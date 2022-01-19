@@ -103,6 +103,10 @@ fn main() {
             let mut args = line.trim().split_whitespace();
             let command = args.next().unwrap();
 
+            let parsed_command = neosh::core::commands::parser::parse(&line);
+
+            println!("{:?}", parsed_command);
+
             // ===== Built-in commands
             // NOTE: move them later to another location (a separated module)
             match command {
