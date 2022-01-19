@@ -22,7 +22,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: "neosh-linux-x86_64"
-          path: "target/release/neosh"
+          path: "target/optimized/neosh"
           if-no-files-found: error
           retention-days: 7
 
@@ -46,7 +46,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: "neosh-macos-x86_64"
-          path: "target/release/neosh"
+          path: "target/optimized/neosh"
           if-no-files-found: error
           retention-days: 7
 
@@ -70,7 +70,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: "neosh-windows-x86_64.exe"
-          path: "target\\release\\neosh.exe"
+          path: "target\\optimized\\neosh.exe"
           if-no-files-found: error
           retention-days: 7
 
