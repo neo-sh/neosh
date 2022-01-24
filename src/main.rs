@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{io::Stdout, time::Duration};
 
 use crossterm::{cursor, event::{self, Event, KeyCode, KeyEvent}, execute, queue, style::Print, terminal};
 
@@ -7,11 +7,12 @@ use std::io::{Write, stdout};
 struct KeyHandler {
     buffer: String,
     index: u16,
+    stdout: Stdout,
 }
 
 impl KeyHandler {
     fn new() -> Self {
-        Self { buffer: String::new(), index: 0 }
+        Self { buffer: String::new(), index: 0, stdout: stdout() }
     }
 
     fn read(&self) -> anyhow::Result<KeyEvent> {
@@ -48,7 +49,7 @@ impl KeyHandler {
                     self.index -= 1;
                     self.buffer.remove(self.index as usize);
                 }
-                execute!(stdout(), cursor::MoveLeft(1))?;
+                execute!(self.stdout, cursor::MoveLeft(1))?;
             },
             // Del
             KeyEvent {
@@ -74,19 +75,19 @@ impl KeyHandler {
                 modifiers: event::KeyModifiers::NONE,
             } => {
                 if self.index != 0 { self.index -= 1 }
-                execute!(stdout(), cursor::MoveLeft(1))?;
+                execute!(self.stdout, cursor::MoveLeft(1))?;
             },
             KeyEvent {
                 code: KeyCode::Right,
                 modifiers: event::KeyModifiers::NONE,
             } => {
                 if (self.index as usize) < self.buffer.len() { self.index += 1 }
-                execute!(stdout(), cursor::MoveRight(1))?;
+                execute!(self.stdout, cursor::MoveRight(1))?;
             },
             _ => (),
         };
 
-        execute!(stdout(),
+        execute!(self.stdout,
             cursor::Hide,
             terminal::Clear(terminal::ClearType::UntilNewLine),
             cursor::MoveToColumn(1),
