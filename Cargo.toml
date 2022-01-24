@@ -2,7 +2,7 @@
 name = "neosh"
 version = "0.1.0"
 edition = "2018"
-authors = ["NTBBloodBath", "Shift", "Vhyrro"]
+authors = ["Shift", "Vhyrro"]
 description = "A next-gen shell for modern systems"
 repository = "https://github.com/neo-sh/neosh"
 homepage = "https://github.com/neo-sh/neosh"
@@ -13,9 +13,10 @@ include = ["src/*", "Cargo.*", "README.md", "LICENSE"]
 [dependencies]
 dirs = "4.0.0"                      # Crossplatform directories manipulation
 whoami = "1.2.0"                    # Utils for fetching user data
-rustyline = "9.0.0"                 # Read user input
+crossterm = "0.22.1"                # User input handler
 tracing = "0.1.29"                  #
 tracing-appender = "0.2.0"          # Logging
+anyhow = "1.0.52"                   # Easy error handler
 
 [dependencies.mlua]                 # Lua interpreter
 version = "0.6.6"                   #
