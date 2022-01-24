@@ -15,6 +15,7 @@ pub struct KeyHandler {
     stdout: Stdout,
     pub execute: bool,
     pub incomplete: String,
+    pub prompt: String,
 }
 
 impl KeyHandler {
@@ -25,6 +26,7 @@ impl KeyHandler {
             stdout: stdout(),
             execute: false,
             incomplete: String::new(),
+            prompt: String::new(),
         }
     }
 

@@ -45,9 +45,15 @@ fn main() -> anyhow::Result<()> {
     debug!("Entered raw mode");
 
     let mut handler = input::KeyHandler::new();
+    handler.prompt = format!("{user}@{host}$ ");
+    execute!(stdout(), Print(&handler.prompt))?;
     while handler.process()? {
+        if handler.incomplete.is_empty() {
+            handler.prompt = format!("{user}@{host}$ ");
+        }
         if handler.execute {
             debug!("Executing buffer");
+
             let prev = handler.incomplete;
             handler.incomplete = String::new();
 
@@ -77,26 +83,30 @@ fn main() -> anyhow::Result<()> {
                                  .collect::<Vec<_>>()
                                  .join("\t")
                                  );
+                        handler.prompt = format!("{user}@{host}$ ");
                     },
                     Err(LuaError::SyntaxError {
                         incomplete_input: true,
                         ..
                     }) => {
                         handler.incomplete = format!("{prev}{}\n", handler.buffer);
+                        handler.prompt = "> ".into();
                     },
                     Err(err) => {
                         error!("Unrecognised Lua error: {}", err);
+                        handler.prompt = format!("{user}@{host}$ ");
                     }
                 }
             }
 
             handler.buffer = String::new();
-            execute!(stdout(), cursor::Show)?;
+            execute!(stdout(), Print(&handler.prompt), cursor::Show)?;
         } else {
             execute!(
                 stdout(),
+                Print(&handler.prompt),
                 Print(&handler.buffer),
-                cursor::MoveToColumn(handler.index + 1),
+                cursor::MoveToColumn(&handler.index + handler.prompt.len() as u16 + 1),
                 cursor::Show
                 )?;
         }
