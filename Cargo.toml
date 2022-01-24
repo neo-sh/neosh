@@ -16,6 +16,7 @@ whoami = "1.2.0"                    # Utils for fetching user data
 crossterm = "0.22.1"                # User input handler
 tracing = "0.1.29"                  #
 tracing-appender = "0.2.0"          # Logging
+anyhow = "1.0.52"                   # Easy error handler
 
 [dependencies.mlua]                 # Lua interpreter
 version = "0.6.6"                   #
