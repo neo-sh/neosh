@@ -13,6 +13,8 @@ pub struct KeyHandler {
     pub buffer: String,
     pub index: u16,
     stdout: Stdout,
+    pub execute: bool,
+    pub incomplete: String,
 }
 
 impl KeyHandler {
@@ -21,6 +23,8 @@ impl KeyHandler {
             buffer: String::new(),
             index: 0,
             stdout: stdout(),
+            execute: false,
+            incomplete: String::new(),
         }
     }
 
@@ -35,6 +39,7 @@ impl KeyHandler {
     }
 
     pub fn process(&mut self) -> anyhow::Result<bool> {
+        self.execute = false;
         match self.read()? {
             // exit
             KeyEvent {
@@ -74,8 +79,8 @@ impl KeyHandler {
                 code: KeyCode::Enter,
                 modifiers: event::KeyModifiers::NONE,
             } => {
-                self.buffer = String::new();
                 self.index = 0;
+                self.execute = true;
                 println!();
             }
             // Arrows
@@ -109,4 +114,5 @@ impl KeyHandler {
 
         Ok(true)
     }
+
 }
