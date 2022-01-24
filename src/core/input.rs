@@ -107,6 +107,6 @@ impl KeyHandler {
             cursor::MoveToColumn(1),
         )?;
 
-        return Ok(true);
+        Ok(true)
     }
 }

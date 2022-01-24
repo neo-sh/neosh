@@ -1,11 +1,11 @@
-use std::path::PathBuf;
+use std::path::Path;
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{fmt::Subscriber, EnvFilter};
 
 /// Set up log system
 ///
 /// Create file writer and merge it with tracing's subscriber
-pub fn setup(data_dir: &PathBuf) -> WorkerGuard {
+pub fn setup(data_dir: &Path) -> WorkerGuard {
     // File writer
     let appender = tracing_appender::rolling::never(data_dir, "neosh.log");
     let (non_blocking_appender, guard) = tracing_appender::non_blocking(appender);
