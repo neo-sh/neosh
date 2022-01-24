@@ -1,8 +1,14 @@
 use std::{io::Stdout, time::Duration};
 
-use crossterm::{cursor, event::{self, Event, KeyCode, KeyEvent}, execute, queue, style::Print, terminal};
+use crossterm::{
+    cursor,
+    event::{self, Event, KeyCode, KeyEvent},
+    execute, queue,
+    style::Print,
+    terminal,
+};
 
-use std::io::{Write, stdout};
+use std::io::{stdout, Write};
 
 struct KeyHandler {
     buffer: String,
@@ -12,14 +18,18 @@ struct KeyHandler {
 
 impl KeyHandler {
     fn new() -> Self {
-        Self { buffer: String::new(), index: 0, stdout: stdout() }
+        Self {
+            buffer: String::new(),
+            index: 0,
+            stdout: stdout(),
+        }
     }
 
     fn read(&self) -> anyhow::Result<KeyEvent> {
         loop {
             if event::poll(Duration::from_millis(500))? {
                 if let Event::Key(event) = event::read()? {
-                    return Ok(event)
+                    return Ok(event);
                 }
             }
         }
@@ -39,7 +49,7 @@ impl KeyHandler {
             } => {
                 self.buffer.insert(self.index as usize, ch);
                 self.index += 1;
-            },
+            }
             // BackSpace
             KeyEvent {
                 code: KeyCode::Backspace,
@@ -50,7 +60,7 @@ impl KeyHandler {
                     self.buffer.remove(self.index as usize);
                 }
                 execute!(self.stdout, cursor::MoveLeft(1))?;
-            },
+            }
             // Del
             KeyEvent {
                 code: KeyCode::Delete,
@@ -59,41 +69,46 @@ impl KeyHandler {
                 if (self.index as usize) < self.buffer.len() {
                     self.buffer.remove(self.index as usize);
                 }
-            },
+            }
             // CR
             KeyEvent {
                 code: KeyCode::Enter,
                 modifiers: event::KeyModifiers::NONE,
-            } => { 
+            } => {
                 self.buffer = String::new();
                 self.index = 0;
                 println!();
-            },
+            }
             // Arrows
             KeyEvent {
                 code: KeyCode::Left,
                 modifiers: event::KeyModifiers::NONE,
             } => {
-                if self.index != 0 { self.index -= 1 }
+                if self.index != 0 {
+                    self.index -= 1
+                }
                 execute!(self.stdout, cursor::MoveLeft(1))?;
-            },
+            }
             KeyEvent {
                 code: KeyCode::Right,
                 modifiers: event::KeyModifiers::NONE,
             } => {
-                if (self.index as usize) < self.buffer.len() { self.index += 1 }
+                if (self.index as usize) < self.buffer.len() {
+                    self.index += 1
+                }
                 execute!(self.stdout, cursor::MoveRight(1))?;
-            },
+            }
             _ => (),
         };
 
-        execute!(self.stdout,
+        execute!(
+            self.stdout,
             cursor::Hide,
             terminal::Clear(terminal::ClearType::UntilNewLine),
             cursor::MoveToColumn(1),
         )?;
 
-        return Ok(true)
+        return Ok(true);
     }
 }
 
@@ -101,7 +116,8 @@ fn main() -> anyhow::Result<()> {
     terminal::enable_raw_mode()?;
     let mut handler = KeyHandler::new();
     while handler.process()? {
-        execute!(stdout(),
+        execute!(
+            stdout(),
             Print(&handler.buffer),
             cursor::MoveToColumn(handler.index + 1),
             cursor::Show
