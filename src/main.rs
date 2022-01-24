@@ -1,8 +1,8 @@
-use std::io::stdout;
-use crossterm::{terminal, execute, style::Print, cursor};
+use crossterm::{cursor, execute, style::Print, terminal};
 use mlua::{Error as LuaError, Lua, MultiValue};
-use neosh::core::{self, commands, input, fs, lua as nlua};
-use tracing::{debug, info, error};
+use neosh::core::{self, commands, fs, input, lua as nlua};
+use std::io::stdout;
+use tracing::{debug, error, info};
 
 fn init() -> fs::NeoshPaths {
     let mut data = dirs::data_dir().unwrap();
@@ -63,40 +63,44 @@ fn main() -> anyhow::Result<()> {
                 "exit" => {
                     commands::exit();
                     break;
-                },
+                }
                 "cd" => {
                     commands::cd(args);
-                },
+                }
                 "pwd" => {
                     commands::pwd();
-                },
+                }
                 "echo" => {
                     commands::echo(args);
-                },
+                }
                 "" => (),
-                _ => match lua.load(&format!("{prev}{}", &handler.buffer)).eval::<MultiValue>() {
+                _ => match lua
+                    .load(&format!("{prev}{}", &handler.buffer))
+                    .eval::<MultiValue>()
+                {
                     Ok(values) => {
-                        println!("{}",
-                                 values
-                                 .iter()
-                                 .map(|val| format!("{val:?}"))
-                                 .collect::<Vec<_>>()
-                                 .join("\t")
-                                 );
+                        println!(
+                            "{}",
+                            values
+                                .iter()
+                                .map(|val| format!("{val:?}"))
+                                .collect::<Vec<_>>()
+                                .join("\t")
+                        );
                         handler.prompt = format!("{user}@{host}$ ");
-                    },
+                    }
                     Err(LuaError::SyntaxError {
                         incomplete_input: true,
                         ..
                     }) => {
                         handler.incomplete = format!("{prev}{}\n", handler.buffer);
                         handler.prompt = "> ".into();
-                    },
+                    }
                     Err(err) => {
                         error!("Unrecognised Lua error: {}", err);
                         handler.prompt = format!("{user}@{host}$ ");
                     }
-                }
+                },
             }
 
             handler.buffer = String::new();
@@ -108,7 +112,7 @@ fn main() -> anyhow::Result<()> {
                 Print(&handler.buffer),
                 cursor::MoveToColumn(&handler.index + handler.prompt.len() as u16 + 1),
                 cursor::Show
-                )?;
+            )?;
         }
     }
 

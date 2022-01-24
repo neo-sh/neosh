@@ -3,8 +3,7 @@ use std::{io::Stdout, time::Duration};
 use crossterm::{
     cursor,
     event::{self, Event, KeyCode, KeyEvent},
-    execute,
-    terminal,
+    execute, terminal,
 };
 
 use std::io::stdout;
@@ -116,5 +115,4 @@ impl KeyHandler {
 
         Ok(true)
     }
-
 }
