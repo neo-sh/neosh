@@ -48,9 +48,7 @@ fn main() -> anyhow::Result<()> {
     handler.prompt = format!("{user}@{host}$ ");
     execute!(stdout(), Print(&handler.prompt))?;
     while handler.process()? {
-        if handler.incomplete.is_empty() {
-            handler.prompt = format!("{user}@{host}$ ");
-        }
+        handler.prompt = format!("{user}@{host}$ ");
         if handler.execute {
             debug!("Executing buffer");
 
@@ -87,18 +85,15 @@ fn main() -> anyhow::Result<()> {
                                 .collect::<Vec<_>>()
                                 .join("\t")
                         );
-                        handler.prompt = format!("{user}@{host}$ ");
                     }
                     Err(LuaError::SyntaxError {
                         incomplete_input: true,
                         ..
                     }) => {
                         handler.incomplete = format!("{prev}{}\n", handler.buffer);
-                        handler.prompt = "> ".into();
                     }
                     Err(err) => {
                         error!("Unrecognised Lua error: {}", err);
-                        handler.prompt = format!("{user}@{host}$ ");
                     }
                 },
             }
