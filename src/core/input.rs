@@ -75,6 +75,14 @@ impl KeyHandler {
                     self.buffer.remove(self.index as usize);
                 }
             }
+            // Tab
+            KeyEvent {
+                code: KeyCode::Tab,
+                ..
+            } => {
+                self.index += 4;
+                self.buffer.push_str(&" ".repeat(4));
+            }
             // CR
             KeyEvent {
                 code: KeyCode::Enter,
