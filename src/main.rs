@@ -105,7 +105,7 @@ fn main() -> anyhow::Result<()> {
                 stdout(),
                 Print(&handler.prompt),
                 Print(&handler.buffer),
-                cursor::MoveToColumn(&handler.index + handler.prompt.len() as u16 + 1),
+                cursor::MoveToColumn(handler.index + handler.prompt.len() as u16 + 1),
                 cursor::Show
             )?;
         }
