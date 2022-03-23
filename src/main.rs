@@ -99,7 +99,12 @@ fn main() -> anyhow::Result<()> {
             }
 
             handler.buffer = String::new();
-            execute!(stdout(), Print(&handler.prompt), cursor::Show)?;
+            execute!(
+                stdout(),
+                cursor::MoveToColumn(0),
+                Print(&handler.prompt),
+                cursor::Show
+            )?;
         } else {
             execute!(
                 stdout(),
