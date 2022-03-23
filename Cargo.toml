@@ -33,3 +33,4 @@ features = ["fancy"]                # Enable fancy output
 inherits = "release"                # Which profile we inherit
 opt-level = "z"                     # Optimize for size
 codegen-units = 1                   # Build speed -> Executable size
+strip = true                        # Remove debug symbols
