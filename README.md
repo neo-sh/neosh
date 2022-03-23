@@ -7,7 +7,7 @@ Next-gen shell built with Rust and Lua.
 ![Status](https://img.shields.io/badge/status-WIP-informational?style=flat-square&logo=github)
 [![License](https://img.shields.io/github/license/neo-sh/neosh?style=flat-square)](https://github.com/neo-sh/neosh/blob/main/LICENSE)
 [![Discord](https://img.shields.io/badge/discord-join-7289da?style=flat-square&logo=discord)](https://discord.com/invite/DRf8KkfDVE)
-![Minimal Rustc version](https://img.shields.io/badge/Rustc%20version-1.58-orange?style=flat-square&logo=Rust)
+![Minimal Rustc version](https://img.shields.io/badge/Rustc%20version-1.59-orange?style=flat-square&logo=Rust)
 
 </div>
 
@@ -23,7 +23,7 @@ Next-gen shell built with Rust and Lua.
 - Configurable log system
 
 ## Requirements
-- `rustc` version: 1.57+
+- `rustc` version: 1.59+
 
 ## Installation
 ```shell
