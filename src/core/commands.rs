@@ -1,5 +1,6 @@
 //! All built-in commands available in neosh
 use crate::log::utils::command;
+use miette::{miette, IntoDiagnostic, WrapErr};
 use tracing::error;
 
 use std::{
@@ -18,9 +19,9 @@ pub fn exit() {
 /// Change current working directory
 // https://unix.stackexchange.com/a/38809
 // TODO: check if path exists
-pub fn cd(args: SplitWhitespace) {
+pub fn cd(args: SplitWhitespace) -> miette::Result<()> {
     command("cd");
-    let home_dir = dirs::home_dir().unwrap();
+    let home_dir = dirs::home_dir().ok_or_else(|| miette!("Failed to get home directory"))?;
 
     let next_dir = args.peekable().peek().map_or(home_dir, PathBuf::from);
     let next_dir = Path::new(&next_dir);
@@ -28,20 +29,23 @@ pub fn cd(args: SplitWhitespace) {
     if let Err(err) = env::set_current_dir(next_dir) {
         error!("Failed to change directory: {}", err);
     }
+
+    Ok(())
 }
 
 /// Print current working directory
 // NOTE: I am not importing cwd from main.rs because we might change structure (Shift)
-pub fn pwd() {
+pub fn pwd() -> miette::Result<()> {
     command("pwd");
     println!(
         "{}",
         env::current_dir()
-            .unwrap()
-            .into_os_string()
-            .into_string()
-            .unwrap()
+            .into_diagnostic()
+            .wrap_err("Failed to get current directory")?
+            .to_string_lossy(),
     );
+
+    Ok(())
 }
 
 /// Print input
