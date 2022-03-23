@@ -77,8 +77,7 @@ impl KeyHandler {
             }
             // Tab
             KeyEvent {
-                code: KeyCode::Tab,
-                ..
+                code: KeyCode::Tab, ..
             } => {
                 self.index += 4;
                 self.buffer.push_str(&" ".repeat(4));
