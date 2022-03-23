@@ -1,13 +1,14 @@
 use crossterm::{cursor, execute, style::Print, terminal};
+use miette::{miette, IntoDiagnostic, WrapErr};
 use mlua::{Error as LuaError, Lua, MultiValue};
 use neosh::core::{self, commands, fs, input, lua as nlua};
 use std::io::stdout;
-use tracing::{debug, error, info};
+use tracing::{debug, info};
 
-fn init() -> fs::NeoshPaths {
-    let mut data = dirs::data_dir().unwrap();
-    let mut cache = dirs::cache_dir().unwrap();
-    let mut config = dirs::config_dir().unwrap();
+fn init() -> miette::Result<fs::NeoshPaths> {
+    let mut data = dirs::data_dir().ok_or_else(|| miette!("Couldn't get data directory"))?;
+    let mut cache = dirs::cache_dir().ok_or_else(|| miette!("Couldn't get cache directory"))?;
+    let mut config = dirs::config_dir().ok_or_else(|| miette!("Couldn't get config directory"))?;
 
     data.push("neosh");
     cache.push("neosh");
@@ -19,34 +20,39 @@ fn init() -> fs::NeoshPaths {
         config,
     };
 
-    if let Err(err) = &neosh_paths.create_neosh_dirs() {
-        eprintln!("Failed to create NeoSH core directories: {err}");
-    };
+    neosh_paths
+        .create_neosh_dirs()
+        .into_diagnostic()
+        .wrap_err("Failed to create NeoSH core directories")?;
 
     std::env::set_var("NEOSH_VERSION", core::VERSION);
 
-    neosh_paths
+    Ok(neosh_paths)
 }
 
-fn main() -> anyhow::Result<()> {
+fn main() -> miette::Result<()> {
+    // show panics with miette's fancy messages
+    miette::set_panic_hook();
     let neosh_paths = init();
-    let _log_guard = neosh::log::setup(&neosh_paths.data);
+    let _log_guard = neosh::log::setup(&neosh_paths.wrap_err("Error getting directories")?.data);
     let lua = Lua::new();
     info!("Set up Lua instance");
 
-    nlua::init(&lua).unwrap();
+    nlua::init(&lua)
+        .into_diagnostic()
+        .wrap_err("Failed to initialize lua manager")?;
     info!("Loaded NeoSH Lua stdlib");
 
     let user = whoami::username();
     let host = whoami::hostname();
     info!("Fetched user data: {}@{}", user, host);
 
-    terminal::enable_raw_mode()?;
+    terminal::enable_raw_mode().into_diagnostic()?;
     debug!("Entered raw mode");
 
     let mut handler = input::KeyHandler::new();
     handler.prompt = format!("{user}@{host}$ ");
-    execute!(stdout(), Print(&handler.prompt))?;
+    execute!(stdout(), Print(&handler.prompt)).into_diagnostic()?;
     while handler.process()? {
         handler.prompt = format!("{user}@{host}$ ");
         if handler.execute {
@@ -63,10 +69,10 @@ fn main() -> anyhow::Result<()> {
                     break;
                 }
                 "cd" => {
-                    commands::cd(args);
+                    commands::cd(args)?;
                 }
                 "pwd" => {
-                    commands::pwd();
+                    commands::pwd()?;
                 }
                 "echo" => {
                     commands::echo(args);
@@ -93,7 +99,9 @@ fn main() -> anyhow::Result<()> {
                         handler.incomplete = format!("{prev}{}\n", handler.buffer);
                     }
                     Err(err) => {
-                        error!("Unrecognised Lua error: {}", err);
+                        terminal::disable_raw_mode().into_diagnostic()?;
+                        println!("{:?}", miette!(err).wrap_err("Lua Error"));
+                        terminal::enable_raw_mode().into_diagnostic()?;
                     }
                 },
             }
@@ -104,7 +112,8 @@ fn main() -> anyhow::Result<()> {
                 cursor::MoveToColumn(0),
                 Print(&handler.prompt),
                 cursor::Show
-            )?;
+            )
+            .into_diagnostic()?;
         } else {
             execute!(
                 stdout(),
@@ -112,12 +121,13 @@ fn main() -> anyhow::Result<()> {
                 Print(&handler.buffer),
                 cursor::MoveToColumn(handler.index + handler.prompt.len() as u16 + 1),
                 cursor::Show
-            )?;
+            )
+            .into_diagnostic()?;
         }
     }
 
-    execute!(stdout(), cursor::Show)?;
-    terminal::disable_raw_mode()?;
+    execute!(stdout(), cursor::Show).into_diagnostic()?;
+    terminal::disable_raw_mode().into_diagnostic()?;
     debug!("Exited from raw mode");
 
     Ok(())

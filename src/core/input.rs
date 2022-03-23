@@ -5,6 +5,7 @@ use crossterm::{
     event::{self, Event, KeyCode, KeyEvent},
     execute, terminal,
 };
+use miette::IntoDiagnostic;
 
 use std::io::stdout;
 
@@ -29,17 +30,17 @@ impl KeyHandler {
         }
     }
 
-    fn read(&self) -> anyhow::Result<KeyEvent> {
+    fn read(&self) -> miette::Result<KeyEvent> {
         loop {
-            if event::poll(Duration::from_millis(500))? {
-                if let Event::Key(event) = event::read()? {
+            if event::poll(Duration::from_millis(500)).into_diagnostic()? {
+                if let Event::Key(event) = event::read().into_diagnostic()? {
                     return Ok(event);
                 }
             }
         }
     }
 
-    pub fn process(&mut self) -> anyhow::Result<bool> {
+    pub fn process(&mut self) -> miette::Result<bool> {
         self.execute = false;
         match self.read()? {
             // exit
@@ -64,7 +65,7 @@ impl KeyHandler {
                     self.index -= 1;
                     self.buffer.remove(self.index as usize);
                 }
-                execute!(self.stdout, cursor::MoveLeft(1))?;
+                execute!(self.stdout, cursor::MoveLeft(1)).into_diagnostic()?;
             }
             // Del
             KeyEvent {
@@ -99,7 +100,7 @@ impl KeyHandler {
                 if self.index != 0 {
                     self.index -= 1
                 }
-                execute!(self.stdout, cursor::MoveLeft(1))?;
+                execute!(self.stdout, cursor::MoveLeft(1)).into_diagnostic()?;
             }
             KeyEvent {
                 code: KeyCode::Right,
@@ -108,7 +109,7 @@ impl KeyHandler {
                 if (self.index as usize) < self.buffer.len() {
                     self.index += 1
                 }
-                execute!(self.stdout, cursor::MoveRight(1))?;
+                execute!(self.stdout, cursor::MoveRight(1)).into_diagnostic()?;
             }
             _ => (),
         };
@@ -118,7 +119,8 @@ impl KeyHandler {
             cursor::Hide,
             terminal::Clear(terminal::ClearType::UntilNewLine),
             cursor::MoveToColumn(1),
-        )?;
+        )
+        .into_diagnostic()?;
 
         Ok(true)
     }

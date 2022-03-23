@@ -16,7 +16,6 @@ whoami = "1.2.0"                    # Utils for fetching user data
 crossterm = "0.22.1"                # User input handler
 tracing = "0.1.29"                  #
 tracing-appender = "0.2.0"          # Logging
-anyhow = "1.0.52"                   # Easy error handler
 
 [dependencies.mlua]                 # Lua interpreter
 version = "0.6.6"                   #
@@ -25,6 +24,10 @@ features = ["vendored", "luajit"]   # Build LuaJIT on `cargo build`
 [dependencies.tracing-subscriber]   # Logging subscriber
 version = "0.3.3"                   #
 features = ["fmt", "env-filter"]    #
+
+[dependencies.miette]               # Error handling lib
+version = "4.2.1"                   #
+features = ["fancy"]                # Enable fancy output
 
 [profile.optimized]                 # Size optimizations that will hurt build speed
 inherits = "release"                # Which profile we inherit

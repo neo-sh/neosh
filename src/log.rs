@@ -1,3 +1,4 @@
+use miette::{IntoDiagnostic, WrapErr};
 use std::path::Path;
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{fmt::Subscriber, EnvFilter};
@@ -5,7 +6,7 @@ use tracing_subscriber::{fmt::Subscriber, EnvFilter};
 /// Set up log system
 ///
 /// Create file writer and merge it with tracing's subscriber
-pub fn setup(data_dir: &Path) -> WorkerGuard {
+pub fn setup(data_dir: &Path) -> miette::Result<WorkerGuard> {
     // File writer
     let appender = tracing_appender::rolling::never(data_dir, "neosh.log");
     let (non_blocking_appender, guard) = tracing_appender::non_blocking(appender);
@@ -17,10 +18,12 @@ pub fn setup(data_dir: &Path) -> WorkerGuard {
         .finish();
 
     // Set up subscriber as global
-    tracing::subscriber::set_global_default(subscriber).unwrap();
+    tracing::subscriber::set_global_default(subscriber)
+        .into_diagnostic()
+        .wrap_err("Failed to set tracing subscriber")?;
     tracing::info!("Tracing is running");
 
-    guard
+    Ok(guard)
 }
 
 pub mod utils {
