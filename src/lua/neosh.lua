@@ -9,8 +9,9 @@
 local neosh = neosh or {}
 
 --- Return human-readable tables
-neosh.inspect = require("inspect")
-neosh.prompt = require("neosh.prompt")
+--- NOTE: this field is going to be populated when requiring 'inspect.lua'
+neosh.inspect = {}
+-- neosh.prompt = neosh.prompt or require("neosh.prompt")
 
 --- Pretty print the given objects
 neosh.fprint = function(...)
@@ -49,7 +50,7 @@ neosh.escape_str = function(str)
     return str:gsub(("([%s])"):format(table.concat(escape_patterns)), "%%%1")
 end
 
---- Extract the given table keys names and returns them
+--- Extract the given map-like table keys names and returns them
 --- @tparam table tbl The table to extract its keys
 --- @return table
 neosh.tbl_keys = function(tbl)
@@ -76,7 +77,7 @@ neosh.has_value = function(tbl, val)
     return false
 end
 
---- Search if a table contains a key
+--- Search if a map-like table contains a key
 --- @tparam table tbl The table to look for the given key
 --- @tparam string key The key to be looked for
 --- @return boolean
@@ -250,7 +251,7 @@ neosh = setmetatable(neosh, {
             local args = { ... }
             local cmd = key
             for _, arg in ipairs(args) do
-                cmd = cmd .. " " .. arg
+                cmd = table.concat({ cmd, arg }, " ")
             end
             os.execute(cmd)
         end
