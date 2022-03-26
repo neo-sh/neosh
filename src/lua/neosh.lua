@@ -251,7 +251,7 @@ neosh = setmetatable(neosh, {
             local args = { ... }
             local cmd = key
             for _, arg in ipairs(args) do
-                cmd = cmd .. " " .. arg
+                cmd = table.concat({ cmd, arg }, " ")
             end
             os.execute(cmd)
         end
