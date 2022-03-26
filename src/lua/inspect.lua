@@ -1,3 +1,6 @@
+-- Get global NeoSH stdlib metatable
+local neosh = neosh or {}
+
 local inspect = {
     _VERSION = "inspect.lua 3.1.0",
     _URL = "http://github.com/kikito/inspect.lua",
@@ -397,5 +400,8 @@ setmetatable(inspect, {
         return inspect.inspect(...)
     end,
 })
+
+-- Set NeoSH global metatable inspect field
+neosh.inspect = inspect
 
 return inspect
