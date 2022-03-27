@@ -118,7 +118,7 @@ end
 neosh.starts_with = function(str, pattern)
     neosh.assert({
         str = { str, "string" },
-        pattern = { pattern, 'string' },
+        pattern = { pattern, "string" },
     })
     return str:sub(1, #pattern) == pattern
 end
@@ -130,9 +130,9 @@ end
 neosh.ends_with = function(str, pattern)
     neosh.assert({
         str = { str, "string" },
-        pattern = { pattern, 'string' },
+        pattern = { pattern, "string" },
     })
-   return str:sub(-#pattern) == pattern
+    return str:sub(-#pattern) == pattern
 end
 
 --- Check if string contains given pattern
@@ -142,7 +142,7 @@ end
 neosh.str_contains = function(str, pattern)
     neosh.assert({
         str = { str, "string" },
-        pattern = { pattern, 'string' },
+        pattern = { pattern, "string" },
     })
     return str:match(pattern) ~= nil
 end
