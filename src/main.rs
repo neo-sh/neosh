@@ -1,7 +1,7 @@
 use crossterm::{cursor, execute, style::Print, terminal};
 use miette::{miette, IntoDiagnostic, WrapErr};
 use mlua::{Error as LuaError, Lua, MultiValue};
-use neosh::core::{self, commands, fs, input, lua as nlua};
+use neosh::core::{self, commands, executor, fs, input, lua as nlua};
 use std::io::stdout;
 use tracing::{debug, info};
 
@@ -56,64 +56,15 @@ fn main() -> miette::Result<()> {
     while handler.process()? {
         handler.prompt = format!("{user}@{host}$ ");
         if handler.execute {
-            debug!("Executing buffer");
-
-            let prev = handler.incomplete;
-            handler.incomplete = String::new();
-
-            let mut args = handler.buffer.trim().split_whitespace();
-            let command = args.next().unwrap_or("");
-            match command {
-                "exit" => {
-                    commands::exit();
-                    break;
-                }
-                "cd" => {
-                    commands::cd(args)?;
-                }
-                "pwd" => {
-                    commands::pwd()?;
-                }
-                "echo" => {
-                    commands::echo(args);
-                }
-                "" => (),
-                _ => match lua
-                    .load(&format!("{prev}{}", &handler.buffer))
-                    .eval::<MultiValue>()
-                {
-                    Ok(values) => {
-                        println!(
-                            "{}",
-                            values
-                                .iter()
-                                .map(|val| format!("{val:?}"))
-                                .collect::<Vec<_>>()
-                                .join("\t")
-                        );
-                    }
-                    Err(LuaError::SyntaxError {
-                        incomplete_input: true,
-                        ..
-                    }) => {
-                        handler.incomplete = format!("{prev}{}\n", handler.buffer);
-                    }
-                    Err(err) => {
-                        terminal::disable_raw_mode().into_diagnostic()?;
-                        println!("{:?}", miette!(err).wrap_err("Lua Error"));
-                        terminal::enable_raw_mode().into_diagnostic()?;
-                    }
-                },
-            }
-
-            handler.buffer = String::new();
-            execute!(
-                stdout(),
-                cursor::MoveToColumn(0),
-                Print(&handler.prompt),
-                cursor::Show
+            executor::Executor::new(
+                executor::ExecutorType::Internal(executor::InternalExecutor::new(
+                    &mut handler.incomplete,
+                    &mut handler.prompt,
+                    &mut handler.buffer,
+                )),
+                &lua,
             )
-            .into_diagnostic()?;
+            .execute?;
         } else {
             execute!(
                 stdout(),
