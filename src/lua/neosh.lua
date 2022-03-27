@@ -11,6 +11,7 @@ local neosh = neosh or {}
 --- Return human-readable tables
 neosh.inspect = require("inspect")
 neosh.prompt = require("neosh.prompt")
+neosh.command = require("neosh.command")
 
 --- Pretty print the given objects
 neosh.fprint = function(...)
@@ -60,6 +61,19 @@ neosh.tbl_keys = function(tbl)
     end
 
     return keys
+end
+
+--- Extract the given table values names and returns them
+--- @tparam table tbl The table to extract its values from
+--- @return table
+neosh.tbl_values = function(tbl)
+  local keys = {}
+
+  for _, value in pairs(tbl) do
+    table.insert(keys, value)
+  end
+
+  return keys
 end
 
 --- Search if a table contains a value
