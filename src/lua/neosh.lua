@@ -25,7 +25,7 @@ neosh.fprint = function(...)
 end
 
 --- Print formatted string in a C-style
---- @tparam string str 
+--- @tparam string str
 --- @vararg any
 neosh.printf = function(str, ...)
     print(str:format(...))
@@ -81,7 +81,7 @@ end
 
 --- Check if string contains given pattern
 --- @tparam string str
---- @tparam string pattern 
+--- @tparam string pattern
 --- @return boolean
 neosh.str_contains = function(str, pattern)
     return str:match(pattern) ~= nil
