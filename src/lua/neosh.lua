@@ -8,18 +8,31 @@
 --- @class neosh
 local neosh = neosh or {}
 
+----- UTILS ---------------------------
+---------------------------------------
+
 --- Return human-readable tables
 --- NOTE: this field is going to be populated when requiring 'inspect.lua'
 neosh.inspect = {}
--- neosh.prompt = neosh.prompt or require("neosh.prompt")
 
 --- Pretty print the given objects
+--- @vararg any
 neosh.fprint = function(...)
     local args = { ... }
     for _, arg in ipairs(args) do
         print(neosh.inspect(arg))
     end
 end
+
+--- Print formatted string in a C-style
+--- @tparam string str 
+--- @vararg any
+neosh.printf = function(str, ...)
+    print(str:format(...))
+end
+
+----- STRINGS -------------------------
+---------------------------------------
 
 --- Check if string is empty or if it is nil
 --- @tparam str string The string to be checked
@@ -50,45 +63,28 @@ neosh.escape_str = function(str)
     return str:gsub(("([%s])"):format(table.concat(escape_patterns)), "%%%1")
 end
 
---- Extract the given map-like table keys names and returns them
---- @tparam table tbl The table to extract its keys
---- @return table
-neosh.tbl_keys = function(tbl)
-    local keys = {}
-
-    for key, _ in pairs(tbl) do
-        table.insert(keys, key)
-    end
-
-    return keys
+--- Check if string starts with given pattern
+--- @tparam string str
+--- @tparam string pattern
+--- @return boolean
+neosh.starts_with = function(str, pattern)
+    return str:sub(1, #pattern) == pattern
 end
 
---- Search if a table contains a value
---- @tparam table tbl The table to look for the given value
---- @tparam any val The value to be looked for
+--- Check if string ends with given pattern
+--- @tparam string str
+--- @tparam string pattern
 --- @return boolean
-neosh.has_value = function(tbl, val)
-    for _, value in ipairs(tbl) do
-        if value == val then
-            return true
-        end
-    end
-
-    return false
+neosh.ends_with = function(str, pattern)
+    return str:sub(-#pattern) == pattern
 end
 
---- Search if a map-like table contains a key
---- @tparam table tbl The table to look for the given key
---- @tparam string key The key to be looked for
+--- Check if string contains given pattern
+--- @tparam string str
+--- @tparam string pattern 
 --- @return boolean
-neosh.has_key = function(tbl, key)
-    for _, k in ipairs(neosh.tbl_keys(tbl)) do
-        if k == key then
-            return true
-        end
-    end
-
-    return false
+neosh.str_contains = function(str, pattern)
+    return str:match(pattern) ~= nil
 end
 
 --- Splits a string at N instances of a separator
@@ -135,6 +131,62 @@ neosh.split = function(str, sep, kwargs)
     end
 
     return str_tbl
+end
+
+
+----- TABLES --------------------------
+---------------------------------------
+
+--- Extract the given map-like table keys names and returns them
+--- @tparam table tbl The table to extract its keys
+--- @return table
+neosh.tbl_keys = function(tbl)
+    local keys = {}
+    for key, _ in pairs(tbl) do
+        table.insert(keys, key)
+    end
+
+    return keys
+end
+
+--- Extract the given table values and returns them
+---@tparam table tbl The table to extract its keys
+---@return table
+neosh.tbl_values = function(tbl)
+    local values = {}
+    for _, value in pairs(tbl) do
+        table.insert(values, value)
+    end
+
+    return values
+end
+
+--- Search if a table contains a value
+--- @tparam table tbl The table to look for the given value
+--- @tparam any val The value to be looked for
+--- @return boolean
+neosh.has_value = function(tbl, val)
+    for _, value in ipairs(neosh.tbl_values(tbl)) do
+        if value == val then
+            return true
+        end
+    end
+
+    return false
+end
+
+--- Search if a map-like table contains a key
+--- @tparam table tbl The table to look for the given key
+--- @tparam string key The key to be looked for
+--- @return boolean
+neosh.has_key = function(tbl, key)
+    for _, k in ipairs(neosh.tbl_keys(tbl)) do
+        if k == key then
+            return true
+        end
+    end
+
+    return false
 end
 
 --- Filter a table using a predicate function
@@ -227,22 +279,6 @@ neosh.deep_copy = function(orig)
     end
 
     return copy
-end
-
---- Check if strings starts with given pattern
---- @tparam string str
---- @tparam string pattern
---- @return boolean
-neosh.starts_with = function(str, pattern)
-    return str:sub(1, #pattern) == pattern
-end
-
---- Check if strings ends with given pattern
---- @tparam string str
---- @tparam string pattern
---- @return boolean
-neosh.ends_with = function(str, pattern)
-    return str:sub(-#pattern) == pattern
 end
 
 neosh = setmetatable(neosh, {
