@@ -346,4 +346,7 @@ setmetatable(inspect, {
 -- Set NeoSH global metatable inspect field
 neosh.inspect = inspect
 
+-- Set NeoSH global metatable inspect field
+neosh.inspect = inspect
+
 return inspect
