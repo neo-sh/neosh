@@ -5,6 +5,8 @@ use mlua::Lua;
 
 use tracing::{debug, error, info, trace, warn};
 
+use crate::core::{self, commands};
+
 const NEOSH_STDLIB: &[u8] = include_bytes!("../lua/neosh.lua");
 const NEOSH_INSPECT: &[u8] = include_bytes!("../lua/inspect.lua");
 
@@ -31,8 +33,23 @@ pub fn init(lua: &Lua) -> LuaResult<LuaTable> {
     let globals = lua.globals();
 
     // ===== Load NeoSH Lua scripts and functions
-    // Load NeoSH extended Lua stdlib + inspect function + logs
     let lua_neosh = lua.create_table()?;
+
+    // Expose NeoSH version as a "constant"
+    lua_neosh.set("VERSION", core::VERSION)?;
+
+    // Expose built-in NeoSH commands to Lua side (except exit command because it does nothing)
+    let cd_fn = lua.create_function(|_, args: String| {
+        commands::cd(args.split_whitespace()).unwrap_or(());
+        Ok(())
+    })?;
+    lua_neosh.set("cd", cd_fn)?;
+
+    let pwd_fn = lua.create_function(|_, ()| {
+        commands::pwd().unwrap();
+        Ok(())
+    })?;
+    lua_neosh.set("pwd", pwd_fn)?;
 
     // Set logging functions and expose them as 'neosh.log'
     let lua_log = lua.create_table()?;
@@ -44,6 +61,7 @@ pub fn init(lua: &Lua) -> LuaResult<LuaTable> {
     lua_neosh.set("log", lua_log)?;
 
     debug!("Set up logging for Neosh Lua stdlib");
+
     globals.set("neosh", lua_neosh)?;
 
     // Load NeoSH stdlib
