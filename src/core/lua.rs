@@ -39,8 +39,8 @@ pub fn init(lua: &Lua) -> LuaResult<LuaTable> {
     lua_neosh.set("VERSION", core::VERSION)?;
 
     // Expose built-in NeoSH commands to Lua side (except exit command because it does nothing)
-    let cd_fn = lua.create_function(|_, args: String| {
-        commands::cd(args.split_whitespace()).unwrap_or(());
+    let cd_fn = lua.create_function(|_, path: String| {
+        commands::cd(path.split_whitespace()).unwrap_or(());
         Ok(())
     })?;
     lua_neosh.set("cd", cd_fn)?;
