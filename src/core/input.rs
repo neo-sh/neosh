@@ -1,4 +1,4 @@
-use std::{io::Stdout, time::Duration};
+use std::{convert::TryInto, io::Stdout, time::Duration};
 
 use crossterm::{
     cursor,
@@ -91,6 +91,19 @@ impl KeyHandler {
                 self.index = 0;
                 self.execute = true;
                 println!();
+            }
+            // HOME
+            KeyEvent {
+                code: KeyCode::Home, ..
+            } => {
+                self.index = 0;
+            }
+            // END
+            KeyEvent {
+                code: KeyCode::End, ..
+            } => {
+                let buffer_len: u16 = self.buffer.len().try_into().unwrap();
+                self.index = buffer_len;
             }
             // Arrows
             KeyEvent {
