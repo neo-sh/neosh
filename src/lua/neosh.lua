@@ -385,6 +385,9 @@ neosh = setmetatable(neosh, {
             for _, arg in ipairs(args) do
                 cmd = cmd .. " " .. arg
             end
+            -- TODO(NTBBloodbath): Look for a way to execute system commands and get their
+            --                     exit code and check if command exists so we can save
+            --                     'neosh.system_cmd(args)' into history
             os.execute(cmd)
         end
     end,
