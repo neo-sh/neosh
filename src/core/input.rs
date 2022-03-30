@@ -94,8 +94,7 @@ impl KeyHandler {
             }
             // HOME
             KeyEvent {
-                code: KeyCode::Home,
-                ..
+                code: KeyCode::Home, ..
             } => {
                 self.index = 0;
             }
@@ -103,7 +102,7 @@ impl KeyHandler {
             KeyEvent {
                 code: KeyCode::End, ..
             } => {
-                let buffer_len = self.buffer.len().try_into().unwrap();
+                let buffer_len: u16 = self.buffer.len().try_into().unwrap();
                 self.index = buffer_len;
             }
             // Arrows
