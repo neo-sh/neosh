@@ -41,7 +41,7 @@ pub fn init(lua: &Lua) -> LuaResult<LuaTable> {
     // Expose built-in NeoSH commands to Lua side (except exit command because it does nothing)
     let cd_fn = lua.create_function(|_, path: Option<String>| {
         // If no path was passed then fallback to $HOME
-        commands::cd(path.unwrap_or_else(|| "".to_string()).split_whitespace()).unwrap_or(());
+        commands::cd(path.unwrap_or_else(|| "".to_string()).split_whitespace()).unwrap_or(0);
         Ok(())
     })?;
     lua_neosh.set("cd", cd_fn)?;
