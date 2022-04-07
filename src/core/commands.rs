@@ -29,22 +29,23 @@ pub fn cd(args: SplitWhitespace) -> miette::Result<i64> {
 
     // Raise an error if directory does not exists
     if !next_dir.exists() {
-        eprintln!(
-            "Failed to change directory: directory {} does not exists.",
+        eprintln!("{:?}", miette!(
+            "Failed to change directory: directory {} does not exist.",
             next_dir.to_string_lossy()
-        );
+        ).wrap_err("cd command error"));
         exit_code = 1;
     }
 
     // Raise an error if path exists but it is not a directory
     if !next_dir.is_dir() && next_dir.exists() {
         exit_code = 1;
-        eprintln!(
+        eprintln!("{:?}", miette!(
             "Failed to change directory: {} is not a directory.",
             next_dir.to_string_lossy()
-        );
+        ).wrap_err("cd command error"));
     }
 
+    // Store error in logs
     if let Err(err) = env::set_current_dir(next_dir) {
         exit_code = 1;
         error!("Failed to change directory: {}", err);
