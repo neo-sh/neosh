@@ -17,9 +17,13 @@ crossterm = "0.22.1"                # User input handler
 tracing = "0.1.29"                  #
 tracing-appender = "0.2.0"          # Logging
 
-[dependencies.mlua]                 # Lua interpreter
-version = "0.6.6"                   #
+[target.'cfg(target_os = "windows")'.dependencies.mlua]
+version = "0.6.6"                   # Lua interpreter for Windows
 features = ["vendored", "luajit"]   # Build LuaJIT on `cargo build`
+
+[target.'cfg(not(target_os = "windows"))'.dependencies.mlua]
+version = "0.6.6"                   # Lua interpreter not for Windows
+features = ["luajit"]               # Build LuaJIT on `cargo build`
 
 [dependencies.tracing-subscriber]   # Logging subscriber
 version = "0.3.3"                   #
