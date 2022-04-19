@@ -74,7 +74,7 @@ fn main() -> miette::Result<()> {
             let command = args.next().unwrap_or("");
             match command {
                 "exit" => {
-                    history.save("0: exit")?;
+                    history.save("0:exit")?;
                     commands::exit();
                     break;
                 }
@@ -91,13 +91,13 @@ fn main() -> miette::Result<()> {
                 }
                 "pwd" => {
                     commands::pwd()?;
-                    history.save("0: pwd")?;
+                    history.save("0:pwd")?;
                 }
                 "echo" => {
                     let echo_args = args.clone();
                     commands::echo(args);
                     let cmd = format!(
-                        "0: {} {}",
+                        "0:{} {}",
                         "echo",
                         echo_args.collect::<Vec<&str>>().join(" ")
                     );
@@ -117,7 +117,7 @@ fn main() -> miette::Result<()> {
                                 .collect::<Vec<_>>()
                                 .join("\t")
                         );
-                        let cmd = format!("0: {prev}{}", &handler.buffer);
+                        let cmd = format!("0:{prev}{}", &handler.buffer);
                         history.save(&cmd)?;
                     }
                     Err(LuaError::SyntaxError {
@@ -129,7 +129,7 @@ fn main() -> miette::Result<()> {
                     Err(err) => {
                         terminal::disable_raw_mode().into_diagnostic()?;
                         println!("{:?}", miette!(err).wrap_err("Lua Error"));
-                        let cmd = format!("1: {prev}{}", &handler.buffer);
+                        let cmd = format!("1:{prev}{}", &handler.buffer);
                         history.save(&cmd)?;
                         terminal::enable_raw_mode().into_diagnostic()?;
                     }
