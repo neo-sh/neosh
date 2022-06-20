@@ -1,15 +1,15 @@
 use crossterm::{cursor, execute, style::Print, terminal};
 use miette::{miette, IntoDiagnostic, WrapErr};
 use mlua::{Error as LuaError, Lua, MultiValue};
-use neosh::core::{self, commands, fs, input, lua as nlua};
+use neosh::core::{self, commands, fs, history, input, lua as nlua};
 use std::io::stdout;
 use tracing::{debug, info};
 
 fn init() -> miette::Result<fs::NeoshPaths> {
+    // Set up NeoSH directories
     let mut data = dirs::data_dir().ok_or_else(|| miette!("Couldn't get data directory"))?;
     let mut cache = dirs::cache_dir().ok_or_else(|| miette!("Couldn't get cache directory"))?;
     let mut config = dirs::config_dir().ok_or_else(|| miette!("Couldn't get config directory"))?;
-
     data.push("neosh");
     cache.push("neosh");
     config.push("neosh");
@@ -25,6 +25,7 @@ fn init() -> miette::Result<fs::NeoshPaths> {
         .into_diagnostic()
         .wrap_err("Failed to create NeoSH core directories")?;
 
+    // Set NEOSH_VERSION environment variable
     std::env::set_var("NEOSH_VERSION", core::VERSION);
 
     Ok(neosh_paths)
@@ -34,7 +35,15 @@ fn main() -> miette::Result<()> {
     // show panics with miette's fancy messages
     miette::set_panic_hook();
     let neosh_paths = init();
-    let _log_guard = neosh::log::setup(&neosh_paths.wrap_err("Error getting directories")?.data);
+    let neosh_data = &neosh_paths.wrap_err("Error getting directories")?.data;
+    let _log_guard = neosh::log::setup(neosh_data);
+
+    // Set history file path and create history file if not exists
+    let mut history_path = neosh_data.clone();
+    history_path.push("neosh_history");
+    let history = history::NeoshHistory { path: history_path };
+    history.init()?;
+
     let lua = Lua::new();
     info!("Set up Lua instance");
 
@@ -65,17 +74,34 @@ fn main() -> miette::Result<()> {
             let command = args.next().unwrap_or("");
             match command {
                 "exit" => {
+                    history.save("0:exit")?;
                     commands::exit();
                     break;
                 }
                 "cd" => {
-                    commands::cd(args)?;
+                    let path = args.clone();
+                    let exit_code = commands::cd(args)?;
+                    let cmd = format!(
+                        "{}: {} {}",
+                        exit_code,
+                        "cd",
+                        path.collect::<Vec<&str>>().join(" ")
+                    );
+                    history.save(&cmd)?;
                 }
                 "pwd" => {
                     commands::pwd()?;
+                    history.save("0:pwd")?;
                 }
                 "echo" => {
+                    let echo_args = args.clone();
                     commands::echo(args);
+                    let cmd = format!(
+                        "0:{} {}",
+                        "echo",
+                        echo_args.collect::<Vec<&str>>().join(" ")
+                    );
+                    history.save(&cmd)?;
                 }
                 "" => (),
                 _ => match lua
@@ -91,6 +117,8 @@ fn main() -> miette::Result<()> {
                                 .collect::<Vec<_>>()
                                 .join("\t")
                         );
+                        let cmd = format!("0:{prev}{}", &handler.buffer);
+                        history.save(&cmd)?;
                     }
                     Err(LuaError::SyntaxError {
                         incomplete_input: true,
@@ -101,6 +129,8 @@ fn main() -> miette::Result<()> {
                     Err(err) => {
                         terminal::disable_raw_mode().into_diagnostic()?;
                         println!("{:?}", miette!(err).wrap_err("Lua Error"));
+                        let cmd = format!("1:{prev}{}", &handler.buffer);
+                        history.save(&cmd)?;
                         terminal::enable_raw_mode().into_diagnostic()?;
                     }
                 },
