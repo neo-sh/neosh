@@ -4,9 +4,10 @@ use miette::{miette, IntoDiagnostic, WrapErr};
 use tracing::error;
 
 use std::{
+    borrow::Cow,
     env,
-    path::{Path, PathBuf},
-    str::SplitWhitespace,
+    io::{stdout, Write},
+    path::Path,
 };
 
 /// Exit shell
@@ -19,12 +20,17 @@ pub fn exit() {
 /// Change current working directory
 // https://unix.stackexchange.com/a/38809
 // TODO: check if path exists
-pub fn cd(args: SplitWhitespace) -> miette::Result<()> {
+pub fn cd<'a>(mut args: impl Iterator<Item = &'a [u8]>) -> miette::Result<()> {
     command("cd");
-    let home_dir = dirs::home_dir().ok_or_else(|| miette!("Failed to get home directory"))?;
-
-    let next_dir = args.peekable().peek().map_or(home_dir, PathBuf::from);
-    let next_dir = Path::new(&next_dir);
+    let next_dir = if let Some(next_dir) = args.next() {
+        Cow::Borrowed(Path::new(
+            std::str::from_utf8(next_dir)
+                .into_diagnostic()
+                .wrap_err("Path is invalid UTF-8")?,
+        ))
+    } else {
+        Cow::Owned(dirs::home_dir().ok_or_else(|| miette!("Failed to get home directory"))?)
+    };
 
     if let Err(err) = env::set_current_dir(next_dir) {
         error!("Failed to change directory: {}", err);
@@ -50,8 +56,22 @@ pub fn pwd() -> miette::Result<()> {
 
 /// Print input
 // TODO: make it use stdin
-pub fn echo(args: SplitWhitespace) {
+pub fn echo<'a>(args: impl Iterator<Item = &'a [u8]>) -> miette::Result<()> {
     command("echo");
 
-    println!("{}", { args.collect::<Vec<&str>>().join(" ") })
+    let mut stdout = stdout();
+
+    let mut first = true;
+    for a in args {
+        if !first {
+            stdout.write_all(b" ").into_diagnostic()?;
+        }
+
+        stdout.write_all(a).into_diagnostic()?;
+        first = false;
+    }
+
+    stdout.write_all(b"\n").into_diagnostic()?;
+
+    Ok(())
 }
