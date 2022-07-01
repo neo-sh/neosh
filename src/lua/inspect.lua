@@ -86,12 +86,12 @@ end
 
 local function escape(str)
     return (
-            gsub(
-                gsub(gsub(str, "\\", "\\\\"), "(%c)%f[0-9]", longControlCharEscapes),
-                "%c",
-                shortControlCharEscapes
-            )
+        gsub(
+            gsub(gsub(str, "\\", "\\\\"), "(%c)%f[0-9]", longControlCharEscapes),
+            "%c",
+            shortControlCharEscapes
         )
+    )
 end
 
 local function isIdentifier(str)
