@@ -1,8 +1,9 @@
+use bstr::ByteSlice;
 use crossterm::{cursor, execute, style::Print, terminal};
 use miette::{miette, IntoDiagnostic, WrapErr};
 use mlua::{Error as LuaError, Lua, MultiValue};
 use neosh::core::{self, commands, fs, input, lua as nlua};
-use std::io::stdout;
+use std::io::{stdout, Write};
 use tracing::{debug, info};
 
 fn init() -> miette::Result<fs::NeoshPaths> {
@@ -51,33 +52,36 @@ fn main() -> miette::Result<()> {
     debug!("Entered raw mode");
 
     let mut handler = input::KeyHandler::new();
-    handler.prompt = format!("{user}@{host}$ ");
-    execute!(stdout(), Print(&handler.prompt)).into_diagnostic()?;
+    handler.prompt = format!("{user}@{host}$ ").into();
+    stdout().write_all(&handler.prompt).into_diagnostic()?;
     while handler.process()? {
-        handler.prompt = format!("{user}@{host}$ ");
+        handler.prompt = format!("{user}@{host}$ ").into();
         if handler.execute {
             debug!("Executing buffer");
 
-            let prev = handler.incomplete;
-            handler.incomplete = String::new();
+            let prev = handler.incomplete.clone();
+            handler.incomplete.clear();
 
-            let mut args = handler.buffer.trim().split_whitespace();
-            let command = args.next().unwrap_or("");
+            let mut args = handler
+                .buffer
+                .trim()
+                .split(|c| (*c as char).is_whitespace());
+            let command = args.next().unwrap_or(&[]);
             match command {
-                "exit" => {
+                b"exit" => {
                     commands::exit();
                     break;
                 }
-                "cd" => {
+                b"cd" => {
                     commands::cd(args)?;
                 }
-                "pwd" => {
+                b"pwd" => {
                     commands::pwd()?;
                 }
-                "echo" => {
-                    commands::echo(args);
+                b"echo" => {
+                    commands::echo(args)?;
                 }
-                "" => (),
+                b"" => (),
                 _ => match lua
                     .load(&format!("{prev}{}", &handler.buffer))
                     .eval::<MultiValue>()
@@ -96,7 +100,7 @@ fn main() -> miette::Result<()> {
                         incomplete_input: true,
                         ..
                     }) => {
-                        handler.incomplete = format!("{prev}{}\n", handler.buffer);
+                        handler.incomplete = format!("{prev}{}\n", handler.buffer).into();
                     }
                     Err(err) => {
                         terminal::disable_raw_mode().into_diagnostic()?;
@@ -106,7 +110,7 @@ fn main() -> miette::Result<()> {
                 },
             }
 
-            handler.buffer = String::new();
+            handler.buffer.clear();
             execute!(
                 stdout(),
                 cursor::MoveToColumn(0),
@@ -119,7 +123,7 @@ fn main() -> miette::Result<()> {
                 stdout(),
                 Print(&handler.prompt),
                 Print(&handler.buffer),
-                cursor::MoveToColumn(handler.index + handler.prompt.len() as u16 + 1),
+                cursor::MoveToColumn((handler.index + handler.prompt.len() + 1) as u16),
                 cursor::Show
             )
             .into_diagnostic()?;

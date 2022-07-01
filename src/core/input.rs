@@ -1,5 +1,6 @@
-use std::{convert::TryInto, io::Stdout, time::Duration};
+use std::{io::Stdout, time::Duration};
 
+use bstr::BString;
 use crossterm::{
     cursor,
     event::{self, Event, KeyCode, KeyEvent},
@@ -10,23 +11,29 @@ use miette::IntoDiagnostic;
 use std::io::stdout;
 
 pub struct KeyHandler {
-    pub buffer: String,
-    pub index: u16,
+    pub buffer: BString,
+    pub index: usize,
     stdout: Stdout,
     pub execute: bool,
-    pub incomplete: String,
-    pub prompt: String,
+    pub incomplete: BString,
+    pub prompt: BString,
+}
+
+impl Default for KeyHandler {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl KeyHandler {
     pub fn new() -> Self {
         Self {
-            buffer: String::new(),
+            buffer: BString::default(),
             index: 0,
             stdout: stdout(),
             execute: false,
-            incomplete: String::new(),
-            prompt: String::new(),
+            incomplete: BString::default(),
+            prompt: BString::default(),
         }
     }
 
@@ -53,7 +60,14 @@ impl KeyHandler {
                 code: KeyCode::Char(ch),
                 modifiers: event::KeyModifiers::NONE | event::KeyModifiers::SHIFT,
             } => {
-                self.buffer.insert(self.index as usize, ch);
+                let mut buf = [0; 4];
+                // SAFETY: We don't treat the slice returned by `encode_utf8` as as a
+                // str again, so this can't invoke UB.
+                let s = unsafe { ch.encode_utf8(&mut buf).as_bytes_mut() };
+                s.reverse();
+                for c in s {
+                    self.buffer.insert(self.index, *c);
+                }
                 self.index += 1;
             }
             // BackSpace
@@ -81,7 +95,7 @@ impl KeyHandler {
                 code: KeyCode::Tab, ..
             } => {
                 self.index += 4;
-                self.buffer.push_str(&" ".repeat(4));
+                self.buffer.extend_from_slice(b"    ");
             }
             // CR
             KeyEvent {
@@ -94,7 +108,8 @@ impl KeyHandler {
             }
             // HOME
             KeyEvent {
-                code: KeyCode::Home, ..
+                code: KeyCode::Home,
+                ..
             } => {
                 self.index = 0;
             }
@@ -102,8 +117,7 @@ impl KeyHandler {
             KeyEvent {
                 code: KeyCode::End, ..
             } => {
-                let buffer_len: u16 = self.buffer.len().try_into().unwrap();
-                self.index = buffer_len;
+                self.index = self.buffer.len();
             }
             // Arrows
             KeyEvent {
