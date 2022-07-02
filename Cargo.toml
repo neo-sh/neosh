@@ -2,7 +2,7 @@
 name = "neosh"
 version = "0.1.0"
 edition = "2018"
-authors = ["Shift", "Vhyrro"]
+authors = ["Shift", "Vhyrro", "NTBBloodbath"]
 description = "A next-gen shell for modern systems"
 repository = "https://github.com/neo-sh/neosh"
 homepage = "https://github.com/neo-sh/neosh"
